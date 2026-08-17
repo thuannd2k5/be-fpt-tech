@@ -33,6 +33,15 @@ export class UsersService {
     return await this.userModel.findOne({ _id: id });
   }
 
+  async findOneByUsername(username: string) {
+    return await this.userModel.findOne({ email: username });
+  }
+
+  async isValidPassword(password: string, hash: string) {
+    const result = await bcrypt.compare(password, hash);
+    return result;
+  }
+
   async update(updateUserDto: UpdateUserDto) {
     if (!mongoose.Types.ObjectId.isValid(updateUserDto._id)) {
       return "not found user"
