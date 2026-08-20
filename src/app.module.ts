@@ -11,7 +11,6 @@ import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { CoursesModule } from './courses/courses.module';
 import { ClassroomsModule } from './classrooms/classrooms.module';
-import { RoomsModule } from './rooms/rooms.module';
 import { LeadsModule } from './leads/leads.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { InvoicesModule } from './invoices/invoices.module';
@@ -49,7 +48,6 @@ import MongooseDelete from 'mongoose-delete';
     PermissionsModule,
     CoursesModule,
     ClassroomsModule,
-    RoomsModule,
     LeadsModule,
     EnrollmentsModule,
     InvoicesModule,
