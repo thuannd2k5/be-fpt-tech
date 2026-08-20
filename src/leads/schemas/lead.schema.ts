@@ -1,42 +1,30 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
-export type UserDocument = HydratedDocument<User>;
+export type LeadDocument = HydratedDocument<Lead>;
 
 @Schema({ timestamps: true })
-export class User {
-    @Prop({ required: true })
-    username: string;
-
-    @Prop({ required: true })
-    password: string;
-
+export class Lead {
     @Prop()
     full_name: string;
-
-    @Prop({ required: true, unique: true })
-    email: string;
 
     @Prop()
     phone: string;
 
     @Prop()
-    address: string;
+    email: string;
 
     @Prop()
-    gender: string;
+    course_name: string;
 
-    @Prop()
-    birthday: Date;
-
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Role' })
-    role_id: mongoose.Schema.Types.ObjectId;
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+    consultant_id: mongoose.Schema.Types.ObjectId;
 
     @Prop()
     status: string;
 
     @Prop()
-    refreshToken: string;
+    note: string;
 
     @Prop({ type: Object })
     createdBy: {
@@ -57,4 +45,4 @@ export class User {
     };
 }
 
-export const UserSchema = SchemaFactory.createForClass(User);
+export const LeadSchema = SchemaFactory.createForClass(Lead);
