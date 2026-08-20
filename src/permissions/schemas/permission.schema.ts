@@ -15,7 +15,7 @@ export class Permission {
     method: string;
 
     @Prop()
-    description: string;
+    module: string;
 
     @Prop({ type: Object })
     createdBy: {

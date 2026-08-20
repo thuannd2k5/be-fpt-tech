@@ -13,13 +13,17 @@ export class CreateUserDto {
     username: string;
 
     @IsNotEmpty()
-    @IsEmail()
-    email: string;
-
-    @IsNotEmpty()
     @IsString()
     @MinLength(6)
     password: string;
+
+    @IsOptional()
+    @IsString()
+    full_name?: string;
+
+    @IsNotEmpty()
+    @IsEmail()
+    email: string;
 
     @IsOptional()
     @IsString()
@@ -35,5 +39,13 @@ export class CreateUserDto {
 
     @IsOptional()
     @IsDateString()
-    birthday?: string;
+    birthday?: Date;
+
+    @IsOptional()
+    @IsString()
+    role_id?: string;
+
+    @IsOptional()
+    @IsString()
+    status?: string;
 }
