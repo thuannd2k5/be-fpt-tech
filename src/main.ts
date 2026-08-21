@@ -1,7 +1,7 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { TransformInterceptor } from './core/transform.interceptor';
 
@@ -23,6 +23,13 @@ async function bootstrap() {
       "preflightContinue": false,
     }
   );
+
+  app.setGlobalPrefix('api');
+  app.enableVersioning({
+    type: VersioningType.URI, //v
+    defaultVersion: ['1', '2'] // 1->v1,2->v2
+  });
+
   await app.listen(port);
 }
 bootstrap();
