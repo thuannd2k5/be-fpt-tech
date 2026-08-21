@@ -1,26 +1,42 @@
 import { Injectable } from '@nestjs/common';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Invoice, InvoiceDocument } from './schemas/invoice.schema';
+import { SoftDeleteModel } from 'mongoose-delete';
+import mongoose from 'mongoose';
+import aqp from 'api-query-params';
+import { IUser } from '../users/user.interface';
 
 @Injectable()
 export class InvoicesService {
-  create(createInvoiceDto: CreateInvoiceDto) {
-    return 'This action adds a new invoice';
+  constructor(@InjectModel(Invoice.name) private invoiceModel: SoftDeleteModel<InvoiceDocument>) { }
+
+  create(createInvoiceDto: CreateInvoiceDto, user: IUser) {
+    return this.invoiceModel.create({ ...createInvoiceDto, createdBy: { _id: user._id, email: user.email } });
   }
 
-  findAll() {
-    return `This action returns all invoices`;
+  async findAll(currentPage: number, limit: number, qs: string) {
+    const { filter, sort, population } = aqp(qs);
+    delete filter.current; delete filter.pageSize;
+    const defaultLimit = +limit || 10; const current = +currentPage || 1;
+    const totalItems = await this.invoiceModel.countDocuments(filter);
+    const result = await this.invoiceModel.find(filter).skip((current - 1) * defaultLimit).limit(defaultLimit).sort(sort as any).populate(population).exec();
+    return { meta: { current, pageSize: defaultLimit, pages: Math.ceil(totalItems / defaultLimit), total: totalItems }, result };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} invoice`;
+  findOne(id: string) {
+    if (!mongoose.Types.ObjectId.isValid(id)) return 'not found invoice';
+    return this.invoiceModel.findOne({ _id: id }).populate('enrollment_id');
   }
 
-  update(id: number, updateInvoiceDto: UpdateInvoiceDto) {
-    return `This action updates a #${id} invoice`;
+  update(updateInvoiceDto: UpdateInvoiceDto, user: IUser) {
+    return this.invoiceModel.updateOne({ _id: updateInvoiceDto._id }, { ...updateInvoiceDto, updatedBy: { _id: user._id, email: user.email } });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} invoice`;
+  async remove(id: string, user: IUser) {
+    if (!mongoose.Types.ObjectId.isValid(id)) return 'not found invoice';
+    await this.invoiceModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } });
+    return this.invoiceModel.delete({ _id: id });
   }
 }

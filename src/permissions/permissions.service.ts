@@ -1,26 +1,50 @@
 import { Injectable } from '@nestjs/common';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Permission, PermissionDocument } from './schemas/permission.schema';
+import { SoftDeleteModel } from 'mongoose-delete';
+import mongoose from 'mongoose';
+import aqp from 'api-query-params';
+import { IUser } from '../users/user.interface';
 
 @Injectable()
 export class PermissionsService {
-  create(createPermissionDto: CreatePermissionDto) {
-    return 'This action adds a new permission';
+  constructor(@InjectModel(Permission.name) private permissionModel: SoftDeleteModel<PermissionDocument>) { }
+
+  create(createPermissionDto: CreatePermissionDto, user: IUser) {
+    return this.permissionModel.create({ ...createPermissionDto, createdBy: { _id: user._id, email: user.email } });
   }
 
-  findAll() {
-    return `This action returns all permissions`;
+  async findAll(currentPage: number, limit: number, qs: string) {
+    const { filter, sort, population } = aqp(qs);
+    delete filter.current;
+    delete filter.pageSize;
+    const defaultLimit = +limit || 10;
+    const current = +currentPage || 1;
+    const totalItems = await this.permissionModel.countDocuments(filter);
+    const result = await this.permissionModel.find(filter).skip((current - 1) * defaultLimit)
+      .limit(defaultLimit).sort(sort as any).populate(population).exec();
+    return { meta: { current, pageSize: defaultLimit, pages: Math.ceil(totalItems / defaultLimit), total: totalItems }, result };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} permission`;
+  findOne(id: string) {
+    if (!mongoose.Types.ObjectId.isValid(id)) return 'not found permission';
+    return this.permissionModel.findOne({ _id: id });
   }
 
-  update(id: number, updatePermissionDto: UpdatePermissionDto) {
-    return `This action updates a #${id} permission`;
+  update(updatePermissionDto: UpdatePermissionDto, user: IUser) {
+    return this.permissionModel.updateOne({ _id: updatePermissionDto._id }, {
+      ...updatePermissionDto,
+      updatedBy: { _id: user._id, email: user.email }
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} permission`;
+  async remove(id: string, user: IUser) {
+    if (!mongoose.Types.ObjectId.isValid(id)) return 'not found permission';
+    await this.permissionModel.updateOne({ _id: id }, {
+      deletedBy: { _id: user._id, email: user.email }
+    });
+    return this.permissionModel.delete({ _id: id });
   }
 }

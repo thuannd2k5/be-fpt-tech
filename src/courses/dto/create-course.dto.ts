@@ -18,8 +18,8 @@ export class CreateCourseDto {
     duration?: string;
 
     @IsOptional()
-    @IsNumber()
-    price?: number;
+    @IsString()
+    price?: string;
 
     @IsOptional()
     @IsString()

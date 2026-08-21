@@ -1,26 +1,50 @@
 import { Injectable } from '@nestjs/common';
 import { CreateClassroomDto } from './dto/create-classroom.dto';
 import { UpdateClassroomDto } from './dto/update-classroom.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Classroom, ClassroomDocument } from './schemas/classroom.schema';
+import { SoftDeleteModel } from 'mongoose-delete';
+import mongoose from 'mongoose';
+import aqp from 'api-query-params';
+import { IUser } from '../users/user.interface';
 
 @Injectable()
 export class ClassroomsService {
-  create(createClassroomDto: CreateClassroomDto) {
-    return 'This action adds a new classroom';
+  constructor(@InjectModel(Classroom.name) private classroomModel: SoftDeleteModel<ClassroomDocument>) { }
+
+  create(createClassroomDto: CreateClassroomDto, user: IUser) {
+    return this.classroomModel.create({ ...createClassroomDto, createdBy: { _id: user._id, email: user.email } });
   }
 
-  findAll() {
-    return `This action returns all classrooms`;
+  async findAll(currentPage: number, limit: number, qs: string) {
+    const { filter, sort, population } = aqp(qs);
+    delete filter.current; delete filter.pageSize;
+    const defaultLimit = +limit || 10; const current = +currentPage || 1;
+    const totalItems = await this.classroomModel.countDocuments(filter);
+    const result = await this.classroomModel.find(filter).skip((current - 1) * defaultLimit).limit(defaultLimit).sort(sort as any).populate(population).exec();
+    return {
+      meta: {
+        current,
+        pageSize: defaultLimit,
+        pages: Math.ceil(totalItems / defaultLimit),
+        total: totalItems
+      },
+      result
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} classroom`;
+  findOne(id: string) {
+    if (!mongoose.Types.ObjectId.isValid(id)) return 'not found classroom';
+    return this.classroomModel.findOne({ _id: id }).populate('course_id teacher_id');
   }
 
-  update(id: number, updateClassroomDto: UpdateClassroomDto) {
-    return `This action updates a #${id} classroom`;
+  update(updateClassroomDto: UpdateClassroomDto, user: IUser) {
+    return this.classroomModel.updateOne({ _id: updateClassroomDto._id }, { ...updateClassroomDto, updatedBy: { _id: user._id, email: user.email } });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} classroom`;
+  async remove(id: string, user: IUser) {
+    if (!mongoose.Types.ObjectId.isValid(id)) return 'not found classroom';
+    await this.classroomModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } });
+    return this.classroomModel.delete({ _id: id });
   }
 }

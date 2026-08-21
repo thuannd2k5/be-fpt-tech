@@ -1,26 +1,42 @@
 import { Injectable } from '@nestjs/common';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Enrollment, EnrollmentDocument } from './schemas/enrollment.schema';
+import { SoftDeleteModel } from 'mongoose-delete';
+import mongoose from 'mongoose';
+import aqp from 'api-query-params';
+import { IUser } from '../users/user.interface';
 
 @Injectable()
 export class EnrollmentsService {
-  create(createEnrollmentDto: CreateEnrollmentDto) {
-    return 'This action adds a new enrollment';
+  constructor(@InjectModel(Enrollment.name) private enrollmentModel: SoftDeleteModel<EnrollmentDocument>) { }
+
+  create(createEnrollmentDto: CreateEnrollmentDto, user: IUser) {
+    return this.enrollmentModel.create({ ...createEnrollmentDto, createdBy: { _id: user._id, email: user.email } });
   }
 
-  findAll() {
-    return `This action returns all enrollments`;
+  async findAll(currentPage: number, limit: number, qs: string) {
+    const { filter, sort, population } = aqp(qs);
+    delete filter.current; delete filter.pageSize;
+    const defaultLimit = +limit || 10; const current = +currentPage || 1;
+    const totalItems = await this.enrollmentModel.countDocuments(filter);
+    const result = await this.enrollmentModel.find(filter).skip((current - 1) * defaultLimit).limit(defaultLimit).sort(sort as any).populate(population).exec();
+    return { meta: { current, pageSize: defaultLimit, pages: Math.ceil(totalItems / defaultLimit), total: totalItems }, result };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} enrollment`;
+  findOne(id: string) {
+    if (!mongoose.Types.ObjectId.isValid(id)) return 'not found enrollment';
+    return this.enrollmentModel.findOne({ _id: id }).populate('student_id class_id');
   }
 
-  update(id: number, updateEnrollmentDto: UpdateEnrollmentDto) {
-    return `This action updates a #${id} enrollment`;
+  update(updateEnrollmentDto: UpdateEnrollmentDto, user: IUser) {
+    return this.enrollmentModel.updateOne({ _id: updateEnrollmentDto._id }, { ...updateEnrollmentDto, updatedBy: { _id: user._id, email: user.email } });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} enrollment`;
+  async remove(id: string, user: IUser) {
+    if (!mongoose.Types.ObjectId.isValid(id)) return 'not found enrollment';
+    await this.enrollmentModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } });
+    return this.enrollmentModel.delete({ _id: id });
   }
 }

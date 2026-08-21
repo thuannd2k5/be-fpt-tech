@@ -18,7 +18,7 @@ export class Course {
     duration: string;
 
     @Prop()
-    price: number;
+    price: string;
 
     @Prop()
     status: string;

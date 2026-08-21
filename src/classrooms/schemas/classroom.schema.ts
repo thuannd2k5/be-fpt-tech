@@ -24,7 +24,7 @@ export class Classroom {
     class_name: string;
 
     @Prop()
-    max_student: number;
+    max_student: string;
 
     @Prop()
     start_time: string;

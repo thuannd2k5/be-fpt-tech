@@ -19,8 +19,8 @@ export class CreateClassroomDto {
     class_name?: string;
 
     @IsOptional()
-    @IsNumber()
-    max_student?: number;
+    @IsString()
+    max_student?: string;
 
     @IsOptional()
     @IsString()
