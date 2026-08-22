@@ -10,7 +10,7 @@ import {
 export class CreateUserDto {
     @IsNotEmpty()
     @IsString()
-    username: string;
+    name: string;
 
     @IsNotEmpty()
     @IsString()
@@ -43,7 +43,7 @@ export class CreateUserDto {
 
     @IsNotEmpty()
     @IsString()
-    role_id: string;
+    role: string;
 
     @IsOptional()
     @IsString()
@@ -53,7 +53,7 @@ export class CreateUserDto {
 export class RegisterUserDto {
     @IsNotEmpty()
     @IsString()
-    username: string;
+    name: string;
 
     @IsNotEmpty()
     @IsString()

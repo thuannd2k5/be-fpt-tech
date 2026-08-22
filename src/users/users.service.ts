@@ -22,21 +22,21 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto, user: IUser) {
-    const { username, password, role_id, email, phone, gender, address, birthday } = createUserDto;
+    const { name, password, role, email, phone, gender, address, birthday } = createUserDto;
     const hashPassword = await this.hashPassword(password);
     const isExist = await this.userModel.findOne({ email });
     if (isExist) {
       throw new BadRequestException(`Email ${email} da ton tai tren he thong. Vui long su dung email khac!`);
     }
     let newUser = await this.userModel.create({
-      username,
+      name,
       email,
       password: hashPassword,
       phone,
       gender,
       address,
       birthday,
-      role_id,
+      role,
       createdBy: {
         _id: user._id,
         email: user.email
@@ -47,14 +47,14 @@ export class UsersService {
   }
 
   async register(user: RegisterUserDto) {
-    const { username, email, password, gender, address } = user;
+    const { name, email, password, gender, address } = user;
     const hashPassword = await this.hashPassword(password);
     const isExist = await this.userModel.findOne({ email });
     if (isExist) {
       throw new BadRequestException(`Email ${email} da ton tai tren he thong. Vui long su dung email khac!`);
     }
     let newRegister = await this.userModel.create({
-      username,
+      name,
       email,
       password: hashPassword,
       gender,

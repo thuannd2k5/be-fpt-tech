@@ -6,7 +6,7 @@ export type UserDocument = HydratedDocument<User>;
 @Schema({ timestamps: true })
 export class User {
     @Prop({ required: true })
-    username: string;
+    name: string;
 
     @Prop({ required: true })
     password: string;
@@ -30,7 +30,7 @@ export class User {
     birthday: Date;
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Role' })
-    role_id: mongoose.Schema.Types.ObjectId;
+    role: mongoose.Schema.Types.ObjectId;
 
     @Prop()
     status: string;
