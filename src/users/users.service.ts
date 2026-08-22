@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, RegisterUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import bcrypt from "bcryptjs";
 import { InjectModel } from '@nestjs/mongoose';
@@ -22,7 +22,7 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto, user: IUser) {
-    const { username, password, email, phone, gender, address, birthday } = createUserDto;
+    const { username, password, role_id, email, phone, gender, address, birthday } = createUserDto;
     const hashPassword = await this.hashPassword(password);
     const isExist = await this.userModel.findOne({ email });
     if (isExist) {
@@ -36,6 +36,7 @@ export class UsersService {
       gender,
       address,
       birthday,
+      role_id,
       createdBy: {
         _id: user._id,
         email: user.email
@@ -43,6 +44,24 @@ export class UsersService {
     })
 
     return newUser;
+  }
+
+  async register(user: RegisterUserDto) {
+    const { username, email, password, gender, address } = user;
+    const hashPassword = await this.hashPassword(password);
+    const isExist = await this.userModel.findOne({ email });
+    if (isExist) {
+      throw new BadRequestException(`Email ${email} da ton tai tren he thong. Vui long su dung email khac!`);
+    }
+    let newRegister = await this.userModel.create({
+      username,
+      email,
+      password: hashPassword,
+      gender,
+      address,
+      role: "USER"
+    })
+    return newRegister;
   }
 
   async findAll(currentPage: number, limit: number, qs: string) {
@@ -78,7 +97,7 @@ export class UsersService {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return "not found user"
     }
-    return await this.userModel.findOne({ _id: id });
+    return await this.userModel.findOne({ _id: id }).select('-password');
   }
 
   async findOneByUsername(username: string) {
@@ -91,6 +110,9 @@ export class UsersService {
   }
 
   async update(updateUserDto: UpdateUserDto, user: IUser) {
+    if (!mongoose.Types.ObjectId.isValid(updateUserDto._id))
+      return 'not found user'
+
     return await this.userModel.updateOne({ _id: updateUserDto._id }, {
       ...updateUserDto,
       updatedBy: {
