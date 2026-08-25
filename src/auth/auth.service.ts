@@ -42,7 +42,7 @@ export class AuthService {
         //set refresh token to cookie
         response.cookie('refresh_token', refresh_token, {
             httpOnly: true,
-            maxAge: this.configService.get('JWT_REFRESH_EXPIRE') * 1000
+            maxAge: Number(this.configService.get<string>('JWT_REFRESH_EXPIRE')) * 1000
         });
 
         return {
@@ -65,7 +65,7 @@ export class AuthService {
     createRefreshToken = (payload: any) => {
         const refreshToken = this.jwtService.sign(payload, {
             secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
-            expiresIn: this.configService.get('JWT_REFRESH_EXPIRE')
+            expiresIn: Number(this.configService.get<string>('JWT_REFRESH_EXPIRE'))
         });
         return refreshToken;
     }
@@ -94,7 +94,7 @@ export class AuthService {
                 response.clearCookie('refresh_token');
                 response.cookie('refresh_token', refresh_token, {
                     httpOnly: true,
-                    maxAge: this.configService.get('JWT_REFRESH_EXPIRE') * 1000
+                    maxAge: Number(this.configService.get<string>('JWT_REFRESH_EXPIRE')) * 1000
                 });
 
                 return {
@@ -109,9 +109,14 @@ export class AuthService {
             } else {
                 throw new BadRequestException('Invalid refresh token. Vui lòng đăng nhập lại.');
             }
-            console.log('user', user);
         } catch (error) {
             throw new BadRequestException('Invalid refresh token. Vui lòng đăng nhập lại.');
         }
+    }
+
+    logout = async (user: IUser, response: Response) => {
+        await this.usersService.updateUserToken("", user._id);
+        response.clearCookie("refresh_token");
+        return "ok"
     }
 }
