@@ -139,6 +139,10 @@ export class UsersService {
   updateUserToken = async (refreshToken: string, id: string) => {
     return await this.userModel.updateOne({ _id: id }, { refreshToken });
   }
+
+  findUserByToken = async (refreshToken: string) => {
+    return await this.userModel.findOne({ refreshToken });
+  }
 }
 
 
