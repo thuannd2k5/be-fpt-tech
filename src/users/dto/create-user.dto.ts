@@ -1,11 +1,13 @@
 import {
     IsDateString,
     IsEmail,
+    IsMongoId,
     IsNotEmpty,
     IsOptional,
     IsString,
     MinLength,
 } from 'class-validator';
+import mongoose from 'mongoose';
 
 export class CreateUserDto {
     @IsNotEmpty()
@@ -42,8 +44,8 @@ export class CreateUserDto {
     birthday?: Date;
 
     @IsNotEmpty()
-    @IsString()
-    role: string;
+    @IsMongoId()
+    role: mongoose.Schema.Types.ObjectId;
 
     @IsOptional()
     @IsString()

@@ -40,6 +40,7 @@ export class PermissionsService {
   }
 
   async update(updatePermissionDto: UpdatePermissionDto, user: IUser) {
+    if (!mongoose.Types.ObjectId.isValid(updatePermissionDto._id)) return 'not found permission';
     return await this.permissionModel.updateOne({ _id: updatePermissionDto._id }, {
       ...updatePermissionDto,
       updatedBy: { _id: user._id, email: user.email }
