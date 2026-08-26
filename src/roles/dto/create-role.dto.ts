@@ -1,9 +1,9 @@
-import { IsArray, IsBoolean, IsMongoId, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateRoleDto {
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
-    name?: string;
+    name: string;
 
     @IsOptional()
     @IsString()

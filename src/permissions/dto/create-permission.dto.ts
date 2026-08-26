@@ -1,19 +1,19 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreatePermissionDto {
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
-    name?: string;
+    name: string;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
-    path?: string;
+    path: string;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
-    method?: string;
+    method: string;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
-    module?: string;
+    module: string;
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -12,8 +12,14 @@ import { IUser } from '../users/user.interface';
 export class PermissionsService {
   constructor(@InjectModel(Permission.name) private permissionModel: SoftDeleteModel<PermissionDocument>) { }
 
-  create(createPermissionDto: CreatePermissionDto, user: IUser) {
-    return this.permissionModel.create({ ...createPermissionDto, createdBy: { _id: user._id, email: user.email } });
+  async create(createPermissionDto: CreatePermissionDto, user: IUser) {
+    const { path, method } = createPermissionDto;
+    const isExist = await this.permissionModel.findOne({ path, method });
+
+    if (isExist) {
+      throw new BadRequestException(`permission với path ${path} và method ${method} đã tồn tại`)
+    }
+    return await this.permissionModel.create({ ...createPermissionDto, createdBy: { _id: user._id, email: user.email } });
   }
 
   async findAll(currentPage: number, limit: number, qs: string) {
@@ -28,13 +34,13 @@ export class PermissionsService {
     return { meta: { current, pageSize: defaultLimit, pages: Math.ceil(totalItems / defaultLimit), total: totalItems }, result };
   }
 
-  findOne(id: string) {
+  async findOne(id: string) {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found permission';
-    return this.permissionModel.findOne({ _id: id });
+    return await this.permissionModel.findOne({ _id: id });
   }
 
-  update(updatePermissionDto: UpdatePermissionDto, user: IUser) {
-    return this.permissionModel.updateOne({ _id: updatePermissionDto._id }, {
+  async update(updatePermissionDto: UpdatePermissionDto, user: IUser) {
+    return await this.permissionModel.updateOne({ _id: updatePermissionDto._id }, {
       ...updatePermissionDto,
       updatedBy: { _id: user._id, email: user.email }
     });
@@ -45,6 +51,6 @@ export class PermissionsService {
     await this.permissionModel.updateOne({ _id: id }, {
       deletedBy: { _id: user._id, email: user.email }
     });
-    return this.permissionModel.delete({ _id: id });
+    return await this.permissionModel.delete({ _id: id });
   }
 }

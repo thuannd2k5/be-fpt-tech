@@ -1,34 +1,34 @@
-import { IsEnum, IsMongoId, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ClassroomStatus } from '../schemas/classroom.schema';
 
 export class CreateClassroomDto {
-    @IsOptional()
+    @IsNotEmpty()
     @IsMongoId()
-    course_id?: string;
+    course_id: string;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsMongoId()
-    teacher_id?: string;
+    teacher_id: string;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
-    room?: string;
+    room: string;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
-    class_name?: string;
+    class_name: string;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
-    max_student?: string;
+    max_student: string;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
-    start_time?: string;
+    start_time: string;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
-    end_time?: string;
+    end_time: string;
 
     @IsOptional()
     @IsEnum(ClassroomStatus)

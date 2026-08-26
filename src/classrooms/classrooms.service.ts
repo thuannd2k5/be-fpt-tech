@@ -12,8 +12,8 @@ import { IUser } from '../users/user.interface';
 export class ClassroomsService {
   constructor(@InjectModel(Classroom.name) private classroomModel: SoftDeleteModel<ClassroomDocument>) { }
 
-  create(createClassroomDto: CreateClassroomDto, user: IUser) {
-    return this.classroomModel.create({ ...createClassroomDto, createdBy: { _id: user._id, email: user.email } });
+  async create(createClassroomDto: CreateClassroomDto, user: IUser) {
+    return await this.classroomModel.create({ ...createClassroomDto, createdBy: { _id: user._id, email: user.email } });
   }
 
   async findAll(currentPage: number, limit: number, qs: string) {
@@ -33,18 +33,18 @@ export class ClassroomsService {
     };
   }
 
-  findOne(id: string) {
+  async findOne(id: string) {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found classroom';
-    return this.classroomModel.findOne({ _id: id }).populate('course_id teacher_id');
+    return await this.classroomModel.findOne({ _id: id }).populate('course_id teacher_id');
   }
 
-  update(updateClassroomDto: UpdateClassroomDto, user: IUser) {
-    return this.classroomModel.updateOne({ _id: updateClassroomDto._id }, { ...updateClassroomDto, updatedBy: { _id: user._id, email: user.email } });
+  async update(updateClassroomDto: UpdateClassroomDto, user: IUser) {
+    return await this.classroomModel.updateOne({ _id: updateClassroomDto._id }, { ...updateClassroomDto, updatedBy: { _id: user._id, email: user.email } });
   }
 
   async remove(id: string, user: IUser) {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found classroom';
     await this.classroomModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } });
-    return this.classroomModel.delete({ _id: id });
+    return await this.classroomModel.delete({ _id: id });
   }
 }

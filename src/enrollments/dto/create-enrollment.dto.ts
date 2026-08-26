@@ -1,18 +1,18 @@
-import { IsDateString, IsEnum, IsMongoId, IsOptional } from 'class-validator';
+import { IsDateString, IsEnum, IsMongoId, IsNotEmpty, IsOptional } from 'class-validator';
 import { EnrollmentStatus } from '../schemas/enrollment.schema';
 
 export class CreateEnrollmentDto {
-    @IsOptional()
+    @IsNotEmpty()
     @IsMongoId()
-    student_id?: string;
+    student_id: string;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsMongoId()
-    class_id?: string;
+    class_id: string;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsDateString()
-    register_date?: Date;
+    register_date: Date;
 
     @IsOptional()
     @IsEnum(EnrollmentStatus)

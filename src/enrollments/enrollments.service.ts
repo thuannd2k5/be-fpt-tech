@@ -12,8 +12,8 @@ import { IUser } from '../users/user.interface';
 export class EnrollmentsService {
   constructor(@InjectModel(Enrollment.name) private enrollmentModel: SoftDeleteModel<EnrollmentDocument>) { }
 
-  create(createEnrollmentDto: CreateEnrollmentDto, user: IUser) {
-    return this.enrollmentModel.create({ ...createEnrollmentDto, createdBy: { _id: user._id, email: user.email } });
+  async create(createEnrollmentDto: CreateEnrollmentDto, user: IUser) {
+    return await this.enrollmentModel.create({ ...createEnrollmentDto, createdBy: { _id: user._id, email: user.email } });
   }
 
   async findAll(currentPage: number, limit: number, qs: string) {
@@ -25,18 +25,18 @@ export class EnrollmentsService {
     return { meta: { current, pageSize: defaultLimit, pages: Math.ceil(totalItems / defaultLimit), total: totalItems }, result };
   }
 
-  findOne(id: string) {
+  async findOne(id: string) {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found enrollment';
-    return this.enrollmentModel.findOne({ _id: id }).populate('student_id class_id');
+    return await this.enrollmentModel.findOne({ _id: id }).populate('student_id class_id');
   }
 
-  update(updateEnrollmentDto: UpdateEnrollmentDto, user: IUser) {
-    return this.enrollmentModel.updateOne({ _id: updateEnrollmentDto._id }, { ...updateEnrollmentDto, updatedBy: { _id: user._id, email: user.email } });
+  async update(updateEnrollmentDto: UpdateEnrollmentDto, user: IUser) {
+    return await this.enrollmentModel.updateOne({ _id: updateEnrollmentDto._id }, { ...updateEnrollmentDto, updatedBy: { _id: user._id, email: user.email } });
   }
 
   async remove(id: string, user: IUser) {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found enrollment';
     await this.enrollmentModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } });
-    return this.enrollmentModel.delete({ _id: id });
+    return await this.enrollmentModel.delete({ _id: id });
   }
 }

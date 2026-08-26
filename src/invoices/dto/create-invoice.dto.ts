@@ -1,21 +1,21 @@
-import { IsDateString, IsMongoId, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateInvoiceDto {
-    @IsOptional()
+    @IsNotEmpty()
     @IsMongoId()
-    enrollment_id?: string;
+    enrollment_id: string;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsNumber()
-    amount?: number;
+    amount: number;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsNumber()
-    discount_amount?: number;
+    discount_amount: number;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsNumber()
-    final_amount?: number;
+    final_amount: number;
 
     @IsOptional()
     @IsString()

@@ -1,21 +1,21 @@
-import { IsMongoId, IsOptional, IsString } from 'class-validator';
+import { IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateLeadDto {
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
-    full_name?: string;
+    full_name: string;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
-    phone?: string;
+    phone: string;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
-    email?: string;
+    email: string;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
-    course_name?: string;
+    course_name: string;
 
     @IsOptional()
     @IsMongoId()

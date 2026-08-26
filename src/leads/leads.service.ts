@@ -12,8 +12,8 @@ import { IUser } from '../users/user.interface';
 export class LeadsService {
   constructor(@InjectModel(Lead.name) private leadModel: SoftDeleteModel<LeadDocument>) { }
 
-  create(createLeadDto: CreateLeadDto, user: IUser) {
-    return this.leadModel.create({
+  async create(createLeadDto: CreateLeadDto, user: IUser) {
+    return await this.leadModel.create({
       ...createLeadDto,
       createdBy: { _id: user._id, email: user.email }
     });
@@ -46,13 +46,13 @@ export class LeadsService {
     };
   }
 
-  findOne(id: string) {
+  async findOne(id: string) {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found lead';
-    return this.leadModel.findOne({ _id: id }).populate('consultant_id');
+    return await this.leadModel.findOne({ _id: id }).populate('consultant_id');
   }
 
-  update(updateLeadDto: UpdateLeadDto, user: IUser) {
-    return this.leadModel.updateOne({ _id: updateLeadDto._id }, {
+  async update(updateLeadDto: UpdateLeadDto, user: IUser) {
+    return await this.leadModel.updateOne({ _id: updateLeadDto._id }, {
       ...updateLeadDto,
       updatedBy: { _id: user._id, email: user.email }
     });
@@ -64,6 +64,6 @@ export class LeadsService {
     await this.leadModel.updateOne({ _id: id }, {
       deletedBy: { _id: user._id, email: user.email }
     });
-    return this.leadModel.delete({ _id: id });
+    return await this.leadModel.delete({ _id: id });
   }
 }

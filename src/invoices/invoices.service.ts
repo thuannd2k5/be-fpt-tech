@@ -12,8 +12,8 @@ import { IUser } from '../users/user.interface';
 export class InvoicesService {
   constructor(@InjectModel(Invoice.name) private invoiceModel: SoftDeleteModel<InvoiceDocument>) { }
 
-  create(createInvoiceDto: CreateInvoiceDto, user: IUser) {
-    return this.invoiceModel.create({ ...createInvoiceDto, createdBy: { _id: user._id, email: user.email } });
+  async create(createInvoiceDto: CreateInvoiceDto, user: IUser) {
+    return await this.invoiceModel.create({ ...createInvoiceDto, createdBy: { _id: user._id, email: user.email } });
   }
 
   async findAll(currentPage: number, limit: number, qs: string) {
@@ -25,18 +25,18 @@ export class InvoicesService {
     return { meta: { current, pageSize: defaultLimit, pages: Math.ceil(totalItems / defaultLimit), total: totalItems }, result };
   }
 
-  findOne(id: string) {
+  async findOne(id: string) {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found invoice';
-    return this.invoiceModel.findOne({ _id: id }).populate('enrollment_id');
+    return await this.invoiceModel.findOne({ _id: id }).populate('enrollment_id');
   }
 
-  update(updateInvoiceDto: UpdateInvoiceDto, user: IUser) {
-    return this.invoiceModel.updateOne({ _id: updateInvoiceDto._id }, { ...updateInvoiceDto, updatedBy: { _id: user._id, email: user.email } });
+  async update(updateInvoiceDto: UpdateInvoiceDto, user: IUser) {
+    return await this.invoiceModel.updateOne({ _id: updateInvoiceDto._id }, { ...updateInvoiceDto, updatedBy: { _id: user._id, email: user.email } });
   }
 
   async remove(id: string, user: IUser) {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found invoice';
     await this.invoiceModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } });
-    return this.invoiceModel.delete({ _id: id });
+    return await this.invoiceModel.delete({ _id: id });
   }
 }

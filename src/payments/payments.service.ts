@@ -12,8 +12,8 @@ import { IUser } from '../users/user.interface';
 export class PaymentsService {
   constructor(@InjectModel(Payment.name) private paymentModel: SoftDeleteModel<PaymentDocument>) { }
 
-  create(createPaymentDto: CreatePaymentDto, user: IUser) {
-    return this.paymentModel.create({ ...createPaymentDto, createdBy: { _id: user._id, email: user.email } });
+  async create(createPaymentDto: CreatePaymentDto, user: IUser) {
+    return await this.paymentModel.create({ ...createPaymentDto, createdBy: { _id: user._id, email: user.email } });
   }
 
   async findAll(currentPage: number, limit: number, qs: string) {
@@ -28,13 +28,13 @@ export class PaymentsService {
     return { meta: { current, pageSize: defaultLimit, pages: Math.ceil(totalItems / defaultLimit), total: totalItems }, result };
   }
 
-  findOne(id: string) {
+  async findOne(id: string) {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found payment';
-    return this.paymentModel.findOne({ _id: id }).populate('invoice_id');
+    return await this.paymentModel.findOne({ _id: id }).populate('invoice_id');
   }
 
-  update(updatePaymentDto: UpdatePaymentDto, user: IUser) {
-    return this.paymentModel.updateOne({ _id: updatePaymentDto._id }, {
+  async update(updatePaymentDto: UpdatePaymentDto, user: IUser) {
+    return await this.paymentModel.updateOne({ _id: updatePaymentDto._id }, {
       ...updatePaymentDto,
       updatedBy: { _id: user._id, email: user.email }
     });
@@ -45,6 +45,6 @@ export class PaymentsService {
     await this.paymentModel.updateOne({ _id: id }, {
       deletedBy: { _id: user._id, email: user.email }
     });
-    return this.paymentModel.delete({ _id: id });
+    return await this.paymentModel.delete({ _id: id });
   }
 }

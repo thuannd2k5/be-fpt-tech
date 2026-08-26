@@ -12,8 +12,8 @@ import { IUser } from '../users/user.interface';
 export class CoursesService {
   constructor(@InjectModel(Course.name) private courseModel: SoftDeleteModel<CourseDocument>) { }
 
-  create(createCourseDto: CreateCourseDto, user: IUser) {
-    return this.courseModel.create({ ...createCourseDto, createdBy: { _id: user._id, email: user.email } });
+  async create(createCourseDto: CreateCourseDto, user: IUser) {
+    return await this.courseModel.create({ ...createCourseDto, createdBy: { _id: user._id, email: user.email } });
   }
 
   async findAll(currentPage: number, limit: number, qs: string) {
@@ -30,11 +30,11 @@ export class CoursesService {
 
   async findOne(id: string) {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found course';
-    return this.courseModel.findOne({ _id: id });
+    return await this.courseModel.findOne({ _id: id });
   }
 
-  update(updateCourseDto: UpdateCourseDto, user: IUser) {
-    return this.courseModel.updateOne({ _id: updateCourseDto._id }, {
+  async update(updateCourseDto: UpdateCourseDto, user: IUser) {
+    return await this.courseModel.updateOne({ _id: updateCourseDto._id }, {
       ...updateCourseDto,
       updatedBy: { _id: user._id, email: user.email }
     });
@@ -43,6 +43,6 @@ export class CoursesService {
   async remove(id: string, user: IUser) {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found course';
     await this.courseModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } });
-    return this.courseModel.delete({ _id: id });
+    return await this.courseModel.delete({ _id: id });
   }
 }

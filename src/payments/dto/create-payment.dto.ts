@@ -1,15 +1,15 @@
-import { IsDateString, IsMongoId, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreatePaymentDto {
-    @IsOptional()
+    @IsNotEmpty()
     @IsMongoId()
-    invoice_id?: string;
+    invoice_id: string;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
-    payment_method?: string;
+    payment_method: string;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsDateString()
-    payment_date?: Date;
+    payment_date: Date;
 }
