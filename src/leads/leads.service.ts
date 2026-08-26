@@ -20,7 +20,7 @@ export class LeadsService {
   }
 
   async findAll(currentPage: number, limit: number, qs: string) {
-    const { filter, sort, population } = aqp(qs);
+    const { filter, sort, population, projection } = aqp(qs);
     delete filter.current;
     delete filter.pageSize;
 
@@ -28,6 +28,7 @@ export class LeadsService {
     const current = +currentPage || 1;
     const totalItems = await this.leadModel.countDocuments(filter);
     const result = await this.leadModel.find(filter)
+      .select(projection)
       .skip((current - 1) * defaultLimit)
       .limit(defaultLimit)
       .sort(sort as any)

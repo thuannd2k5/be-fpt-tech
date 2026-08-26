@@ -17,11 +17,11 @@ export class EnrollmentsService {
   }
 
   async findAll(currentPage: number, limit: number, qs: string) {
-    const { filter, sort, population } = aqp(qs);
+    const { filter, sort, population, projection } = aqp(qs);
     delete filter.current; delete filter.pageSize;
     const defaultLimit = +limit || 10; const current = +currentPage || 1;
     const totalItems = await this.enrollmentModel.countDocuments(filter);
-    const result = await this.enrollmentModel.find(filter).skip((current - 1) * defaultLimit).limit(defaultLimit).sort(sort as any).populate(population).exec();
+    const result = await this.enrollmentModel.find(filter).select(projection).skip((current - 1) * defaultLimit).limit(defaultLimit).sort(sort as any).populate(population).exec();
     return { meta: { current, pageSize: defaultLimit, pages: Math.ceil(totalItems / defaultLimit), total: totalItems }, result };
   }
 

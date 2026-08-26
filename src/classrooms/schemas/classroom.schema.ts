@@ -1,5 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
+import { Course } from '../../courses/schemas/course.schema';
+import { User } from '../../users/schemas/user.schema';
 
 export enum ClassroomStatus {
     OPEN = 'OPEN',
@@ -11,10 +13,10 @@ export type ClassroomDocument = HydratedDocument<Classroom>;
 
 @Schema({ timestamps: true })
 export class Classroom {
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Course' })
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Course.name })
     course_id: mongoose.Schema.Types.ObjectId;
 
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
     teacher_id: mongoose.Schema.Types.ObjectId;
 
     @Prop()
