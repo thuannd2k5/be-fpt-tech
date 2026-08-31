@@ -18,6 +18,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ConversationsModule } from './conversations/conversations.module';
 import { MessagesModule } from './messages/messages.module';
+import { DatabasesModule } from './databases/databases.module';
 import MongooseDelete from 'mongoose-delete';
 
 @Module({
@@ -54,7 +55,8 @@ import MongooseDelete from 'mongoose-delete';
     PaymentsModule,
     NotificationsModule,
     ConversationsModule,
-    MessagesModule
+    MessagesModule,
+    DatabasesModule
   ],
   controllers: [AppController],
   providers: [AppService,

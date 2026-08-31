@@ -37,6 +37,10 @@ export class CreateUserDto {
 
     @IsOptional()
     @IsString()
+    age?: string;
+
+    @IsOptional()
+    @IsString()
     gender?: string;
 
     @IsOptional()
@@ -77,6 +81,10 @@ export class RegisterUserDto {
     @IsOptional()
     @IsString()
     address?: string;
+
+    @IsOptional()
+    @IsString()
+    age?: string;
 
     @IsOptional()
     @IsString()
