@@ -8,12 +8,18 @@ import mongoose from 'mongoose';
 import { SoftDeleteModel } from 'mongoose-delete';
 import { IUser } from './user.interface';
 import aqp from 'api-query-params';
+import { Role, RoleDocument } from '../roles/schemas/role.schema';
+import { USER_ROLE } from '../databases/sample';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name)
-    private userModel: SoftDeleteModel<UserDocument>) { }
+    private userModel: SoftDeleteModel<UserDocument>,
+
+    @InjectModel(Role.name)
+    private roleModel: SoftDeleteModel<RoleDocument>
+  ) { }
 
   hashPassword = async (password: string) => {
     const salt = await bcrypt.genSalt(10);
@@ -22,7 +28,7 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto, user: IUser) {
-    const { name, password, role, email, phone, gender, address, birthday } = createUserDto;
+    const { name, password, role, email, phone, age, gender, address, birthday } = createUserDto;
     const hashPassword = await this.hashPassword(password);
     const isExist = await this.userModel.findOne({ email });
     if (isExist) {
@@ -34,6 +40,7 @@ export class UsersService {
       password: hashPassword,
       phone,
       gender,
+      age,
       address,
       birthday,
       role,
@@ -47,19 +54,21 @@ export class UsersService {
   }
 
   async register(user: RegisterUserDto) {
-    const { name, email, password, gender, address } = user;
+    const { name, email, password, age, gender, address } = user;
     const hashPassword = await this.hashPassword(password);
     const isExist = await this.userModel.findOne({ email });
     if (isExist) {
       throw new BadRequestException(`Email ${email} da ton tai tren he thong. Vui long su dung email khac!`);
     }
+    const roleUser = await this.roleModel.findOne({ name: USER_ROLE });
     let newRegister = await this.userModel.create({
       name,
       email,
       password: hashPassword,
+      age,
       gender,
       address,
-      role: "USER"
+      role: roleUser?._id
     })
     return newRegister;
   }
@@ -104,7 +113,8 @@ export class UsersService {
   }
 
   async findOneByUsername(username: string) {
-    return (await this.userModel.findOne({ email: username })).populate({ path: "role", select: { _id: 1, name: 1, permissions: 1 } });
+    return await this.userModel.findOne({ email: username })
+      .populate({ path: "role", select: { name: 1 } });
   }
 
   async isValidPassword(password: string, hash: string) {
@@ -150,7 +160,8 @@ export class UsersService {
   }
 
   findUserByToken = async (refreshToken: string) => {
-    return await this.userModel.findOne({ refreshToken });
+    return await this.userModel.findOne({ refreshToken })
+      .populate({ path: "role", select: { name: 1 } });
   }
 }
 

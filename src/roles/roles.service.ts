@@ -7,6 +7,7 @@ import { SoftDeleteModel } from 'mongoose-delete';
 import mongoose from 'mongoose';
 import aqp from 'api-query-params';
 import { IUser } from '../users/user.interface';
+import { ADMIN_ROLE } from '../databases/sample';
 
 @Injectable()
 export class RolesService {
@@ -86,7 +87,7 @@ export class RolesService {
       throw new BadRequestException("Role này khong duoc tim thay")
     }
     const foundRole = await this.roleModel.findById({ _id: id });
-    if (foundRole.name === "ADMIN") {
+    if (foundRole.name === ADMIN_ROLE) {
       throw new BadRequestException("Không thể xóa role ADMIN")
     }
 

@@ -5,11 +5,15 @@ import { Public, ResponseMessage, User } from "../decorator/customize";
 import { RegisterUserDto } from "../users/dto/create-user.dto";
 import { Request, Response } from "express";
 import { IUser } from "../users/user.interface";
+import { RolesService } from "../roles/roles.service";
 
 
 @Controller("/auth")
 export class AuthController {
-    constructor(private authService: AuthService) { }
+    constructor(
+        private authService: AuthService,
+        private roleService: RolesService
+    ) { }
 
     @Public()
     @UseGuards(LocalAuthGuard)
@@ -32,7 +36,9 @@ export class AuthController {
 
     @Get('/account')
     @ResponseMessage('Get user account information')
-    handleGetAccount(@User() user: IUser) {
+    async handleGetAccount(@User() user: IUser) {
+        const temp = await this.roleService.findOne(user.role._id) as any;
+        user.permissions = temp.permissions;
         return { user };
     }
 

@@ -5,28 +5,37 @@ import { IUser } from '../users/user.interface';
 import { RegisterUserDto } from '../users/dto/create-user.dto';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
+import { RolesService } from '../roles/roles.service';
 
 @Injectable()
 export class AuthService {
     constructor(
         private usersService: UsersService,
         private jwtService: JwtService,
-        private configService: ConfigService
+        private configService: ConfigService,
+        private roleService: RolesService
     ) { }
 
     async validateUser(username: string, pass: string): Promise<any> {
         const user = await this.usersService.findOneByUsername(username);
         if (user) {
-            const checkPassword = await this.usersService.isValidPassword(pass, user.password);
-            if (checkPassword === true) {
-                return user;
+            const isValid = await this.usersService.isValidPassword(pass, user.password);
+            if (isValid === true) {
+                const userRole = user.role as unknown as { _id: string, name: string };
+                const temp = await this.roleService.findOne(userRole._id);
+
+                const objUser = {
+                    ...user.toObject(),
+                    permissions: temp?.permissions ?? []
+                }
+                return objUser;
             }
         }
         return null;
     }
 
     async login(user: IUser, response: Response) {
-        const { _id, name, email, role } = user;
+        const { _id, name, email, role, permissions } = user;
         const payload = {
             sub: "token login",
             iss: "from server",
@@ -51,7 +60,8 @@ export class AuthService {
                 _id,
                 name,
                 email,
-                role
+                role,
+                permissions
             }
         };
     }
@@ -90,6 +100,10 @@ export class AuthService {
                 //update refresh token to user
                 await this.usersService.updateUserToken(refresh_token, _id.toString());
 
+                //fetch user role
+                const userRole = user.role as unknown as { _id: string, name: string };
+                const temp = await this.roleService.findOne(userRole._id);
+
                 //set refresh token to cookie
                 response.clearCookie('refresh_token');
                 response.cookie('refresh_token', refresh_token, {
@@ -103,7 +117,8 @@ export class AuthService {
                         _id,
                         name,
                         email,
-                        role
+                        role,
+                        permissions: temp?.permissions ?? []
                     }
                 };
             } else {
