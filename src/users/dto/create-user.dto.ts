@@ -3,6 +3,7 @@ import {
     IsEmail,
     IsMongoId,
     IsNotEmpty,
+    IsNumber,
     IsOptional,
     IsString,
     MinLength,
@@ -36,8 +37,8 @@ export class CreateUserDto {
     address?: string;
 
     @IsOptional()
-    @IsString()
-    age?: string;
+    @IsNumber()
+    age?: number;
 
     @IsOptional()
     @IsString()
@@ -83,8 +84,8 @@ export class RegisterUserDto {
     address?: string;
 
     @IsOptional()
-    @IsString()
-    age?: string;
+    @IsNumber()
+    age?: number;
 
     @IsOptional()
     @IsString()

@@ -122,11 +122,11 @@ export class UsersService {
     return result;
   }
 
-  async update(updateUserDto: UpdateUserDto, user: IUser) {
-    if (!mongoose.Types.ObjectId.isValid(updateUserDto._id))
+  async update(id: string, updateUserDto: UpdateUserDto, user: IUser) {
+    if (!mongoose.Types.ObjectId.isValid(id))
       return 'not found user'
 
-    return await this.userModel.updateOne({ _id: updateUserDto._id }, {
+    return await this.userModel.updateOne({ _id: id }, {
       ...updateUserDto,
       updatedBy: {
         _id: user._id,

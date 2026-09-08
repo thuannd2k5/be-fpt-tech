@@ -62,11 +62,15 @@ export class RolesService {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new BadRequestException("Role này khong duoc tim thay")
     }
-    return (await this.roleModel.findById({ _id: id }))
-      .populate({
-        path: "permissions",
-        select: { _id: 1, path: 1, name: 1, method: 1, module: 1 }
-      })
+    const role = await this.roleModel.findById({ _id: id });
+    if (!role) {
+      return null;
+    }
+
+    return role.populate({
+      path: "permissions",
+      select: { _id: 1, path: 1, name: 1, method: 1, module: 1 }
+    })
   }
 
   async update(id: string, updateRoleDto: UpdateRoleDto, user: IUser) {
