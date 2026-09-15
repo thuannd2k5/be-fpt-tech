@@ -6,4 +6,5 @@ export class UpdateCourseDto extends PartialType(CreateCourseDto) {
     @IsNotEmpty()
     @IsMongoId()
     _id: string;
+    // skd
 }
