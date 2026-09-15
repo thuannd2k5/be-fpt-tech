@@ -15,7 +15,7 @@ export class LeadsService {
   async create(createLeadDto: CreateLeadDto, user: IUser) {
     return await this.leadModel.create({
       ...createLeadDto,
-      createdBy: { _id: user._id, email: user.email }
+      ...(user ? { createdBy: { _id: user._id, email: user.email } } : {})
     });
   }
 

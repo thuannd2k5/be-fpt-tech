@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestj
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import { ResponseMessage, User } from '../decorator/customize';
+import { Public, ResponseMessage, User } from '../decorator/customize';
 import { IUser } from '../users/user.interface';
 
 @Controller('courses')
@@ -16,12 +16,14 @@ export class CoursesController {
   }
 
   @Get()
+  @Public()
   @ResponseMessage('Get all courses')
   findAll(@Query('current') page: string, @Query('pageSize') limit: string, @Query() qs: string) {
     return this.coursesService.findAll(+page, +limit, qs);
   }
 
   @Get(':id')
+  @Public()
   @ResponseMessage('Get course by id')
   findOne(@Param('id') id: string) {
     return this.coursesService.findOne(id);
