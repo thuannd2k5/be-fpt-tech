@@ -7,10 +7,14 @@ import { SoftDeleteModel } from 'mongoose-delete';
 import mongoose from 'mongoose';
 import aqp from 'api-query-params';
 import { IUser } from '../users/user.interface';
+import { Enrollment, EnrollmentDocument } from '../enrollments/schemas/enrollment.schema';
 
 @Injectable()
 export class InvoicesService {
-  constructor(@InjectModel(Invoice.name) private invoiceModel: SoftDeleteModel<InvoiceDocument>) { }
+  constructor(
+    @InjectModel(Invoice.name) private invoiceModel: SoftDeleteModel<InvoiceDocument>,
+    @InjectModel(Enrollment.name) private enrollmentModel: SoftDeleteModel<EnrollmentDocument>
+  ) { }
 
   async create(createInvoiceDto: CreateInvoiceDto, user: IUser) {
     return await this.invoiceModel.create({ ...createInvoiceDto, createdBy: { _id: user._id, email: user.email } });
@@ -28,6 +32,14 @@ export class InvoicesService {
   async findOne(id: string) {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found invoice';
     return await this.invoiceModel.findOne({ _id: id }).populate('enrollment_id');
+  }
+
+  async findMine(user: IUser) {
+    const enrollments = await this.enrollmentModel.find({ student_id: user._id }).select('_id').lean().exec();
+    return this.invoiceModel.find({ enrollment_id: { $in: enrollments.map(item => item._id) } })
+      .populate({ path: 'enrollment_id', populate: { path: 'class_id', populate: { path: 'course_id', select: 'name' } } })
+      .sort({ createdAt: -1 })
+      .exec();
   }
 
   async update(updateInvoiceDto: UpdateInvoiceDto, user: IUser) {

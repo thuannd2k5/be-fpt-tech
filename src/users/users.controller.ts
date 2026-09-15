@@ -4,6 +4,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ResponseMessage, User } from '../decorator/customize';
 import { IUser } from './user.interface';
+import { SkipCheckPermission } from '../decorator/customize';
+import { UpdateMyProfileDto } from './dto/update-my-profile.dto';
 
 @Controller('users')
 export class UsersController {
@@ -24,6 +26,13 @@ export class UsersController {
     @Query() qs: string
   ) {
     return this.usersService.findAll(+page, +limit, qs);
+  }
+
+  @Patch('me')
+  @SkipCheckPermission()
+  @ResponseMessage('Update my profile')
+  updateMyProfile(@Body() updateProfileDto: UpdateMyProfileDto, @User() user: IUser) {
+    return this.usersService.updateMyProfile(user, updateProfileDto);
   }
 
   @Get(':id')

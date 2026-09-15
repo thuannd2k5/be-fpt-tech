@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestj
 import { LeadsService } from './leads.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
-import { Public, ResponseMessage, User } from '../decorator/customize';
+import { Public, ResponseMessage, SkipCheckPermission, User } from '../decorator/customize';
 import { IUser } from '../users/user.interface';
 
 @Controller('leads')
@@ -20,6 +20,13 @@ export class LeadsController {
   @ResponseMessage('Get all leads')
   findAll(@Query('current') page: string, @Query('pageSize') limit: string, @Query() qs: string) {
     return this.leadsService.findAll(+page, +limit, qs);
+  }
+
+  @Get('assigned-to-me')
+  @SkipCheckPermission()
+  @ResponseMessage('Get leads assigned to me')
+  findAssignedToMe(@User() user: IUser) {
+    return this.leadsService.findAssignedToMe(user);
   }
 
   @Get(':id')

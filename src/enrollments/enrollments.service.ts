@@ -7,10 +7,14 @@ import { SoftDeleteModel } from 'mongoose-delete';
 import mongoose from 'mongoose';
 import aqp from 'api-query-params';
 import { IUser } from '../users/user.interface';
+import { Classroom, ClassroomDocument } from '../classrooms/schemas/classroom.schema';
 
 @Injectable()
 export class EnrollmentsService {
-  constructor(@InjectModel(Enrollment.name) private enrollmentModel: SoftDeleteModel<EnrollmentDocument>) { }
+  constructor(
+    @InjectModel(Enrollment.name) private enrollmentModel: SoftDeleteModel<EnrollmentDocument>,
+    @InjectModel(Classroom.name) private classroomModel: SoftDeleteModel<ClassroomDocument>
+  ) { }
 
   async create(createEnrollmentDto: CreateEnrollmentDto, user: IUser) {
     return await this.enrollmentModel.create({ ...createEnrollmentDto, createdBy: { _id: user._id, email: user.email } });
@@ -28,6 +32,29 @@ export class EnrollmentsService {
   async findOne(id: string) {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found enrollment';
     return await this.enrollmentModel.findOne({ _id: id }).populate('student_id class_id');
+  }
+
+  async findMine(user: IUser) {
+    return this.enrollmentModel.find({ student_id: user._id })
+      .populate({
+        path: 'class_id',
+        populate: [
+          { path: 'course_id' },
+          { path: 'teacher_id', select: 'name email' }
+        ]
+      })
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
+  async findStudentsForTeacher(user: IUser) {
+    const classrooms = await this.classroomModel.find({ teacher_id: user._id }).select('_id').lean().exec();
+    const classroomIds = classrooms.map(item => item._id);
+    return this.enrollmentModel.find({ class_id: { $in: classroomIds } })
+      .populate('student_id', 'name email phone')
+      .populate({ path: 'class_id', populate: { path: 'course_id', select: 'name' } })
+      .sort({ createdAt: -1 })
+      .exec();
   }
 
   async update(updateEnrollmentDto: UpdateEnrollmentDto, user: IUser) {

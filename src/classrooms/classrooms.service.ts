@@ -38,6 +38,13 @@ export class ClassroomsService {
     return await this.classroomModel.findOne({ _id: id }).populate('course_id teacher_id');
   }
 
+  async findTeaching(user: IUser) {
+    return this.classroomModel.find({ teacher_id: user._id })
+      .populate('course_id teacher_id', 'name email')
+      .sort({ start_time: 1 })
+      .exec();
+  }
+
   async update(updateClassroomDto: UpdateClassroomDto, user: IUser) {
     return await this.classroomModel.updateOne({ _id: updateClassroomDto._id }, { ...updateClassroomDto, updatedBy: { _id: user._id, email: user.email } });
   }

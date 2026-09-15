@@ -10,6 +10,7 @@ import { IUser } from './user.interface';
 import aqp from 'api-query-params';
 import { Role, RoleDocument } from '../roles/schemas/role.schema';
 import { USER_ROLE } from '../databases/sample';
+import { UpdateMyProfileDto } from './dto/update-my-profile.dto';
 
 @Injectable()
 export class UsersService {
@@ -133,6 +134,29 @@ export class UsersService {
         email: user.email
       }
     });
+  }
+
+  async updateMyProfile(user: IUser, updateProfileDto: UpdateMyProfileDto) {
+    const { name, currentPassword, newPassword } = updateProfileDto;
+    if (!name && !newPassword) throw new BadRequestException('Không có thông tin cần cập nhật');
+    if (currentPassword && !newPassword) throw new BadRequestException('Vui lòng nhập mật khẩu mới');
+
+    const updateData: Record<string, unknown> = {
+      updatedBy: { _id: user._id, email: user.email }
+    };
+
+    if (name) updateData.name = name.trim();
+    if (newPassword) {
+      if (!currentPassword) throw new BadRequestException('Vui lòng nhập mật khẩu hiện tại');
+      const foundUser = await this.userModel.findById(user._id).select('+password').exec();
+      if (!foundUser || !(await this.isValidPassword(currentPassword, foundUser.password))) {
+        throw new BadRequestException('Mật khẩu hiện tại không chính xác');
+      }
+      updateData.password = await this.hashPassword(newPassword);
+    }
+
+    await this.userModel.updateOne({ _id: user._id }, updateData).exec();
+    return this.findOne(user._id);
   }
 
   async remove(id: string, user: IUser) {
