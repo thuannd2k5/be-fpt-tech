@@ -90,6 +90,7 @@ export class UsersService {
       .sort(sort as any)
       .select(projection)
       .select('-password')
+      .populate({ path: 'role', select: { _id: 1, name: 1 } })
       .populate(population)
       .exec();
 
