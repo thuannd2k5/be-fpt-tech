@@ -16,11 +16,36 @@ export class InvoicesService {
     @InjectModel(Enrollment.name) private enrollmentModel: SoftDeleteModel<EnrollmentDocument>
   ) { }
 
+  private async createMissingInvoices() {
+    const enrollments = await this.enrollmentModel.find().populate({
+      path: 'class_id',
+      populate: { path: 'course_id', select: 'price' },
+    }).lean().exec();
+    const enrollmentIds = enrollments.map(enrollment => enrollment._id);
+    const existingInvoices = await this.invoiceModel.find({ enrollment_id: { $in: enrollmentIds } }).select('enrollment_id').lean().exec();
+    const existingEnrollmentIds = new Set(existingInvoices.map(invoice => String(invoice.enrollment_id)));
+    const missingInvoices = enrollments
+      .filter(enrollment => !existingEnrollmentIds.has(String(enrollment._id)))
+      .map(enrollment => {
+        const classroom = enrollment.class_id as unknown as { course_id?: { price?: string | number } } | undefined;
+        const amount = Number(classroom?.course_id?.price || 0);
+        return {
+          enrollment_id: enrollment._id,
+          amount,
+          final_amount: amount,
+          discount_amount: 0,
+          status: 'UNPAID',
+        };
+      });
+    if (missingInvoices.length) await this.invoiceModel.insertMany(missingInvoices);
+  }
+
   async create(createInvoiceDto: CreateInvoiceDto, user: IUser) {
     return await this.invoiceModel.create({ ...createInvoiceDto, createdBy: { _id: user._id, email: user.email } });
   }
 
   async findAll(currentPage: number, limit: number, qs: string) {
+    await this.createMissingInvoices();
     const { filter, sort, population, projection } = aqp(qs);
     delete filter.current; delete filter.pageSize;
     const defaultLimit = +limit || 10; const current = +currentPage || 1;

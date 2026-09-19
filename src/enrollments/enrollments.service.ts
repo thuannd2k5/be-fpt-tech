@@ -8,16 +8,32 @@ import mongoose from 'mongoose';
 import aqp from 'api-query-params';
 import { IUser } from '../users/user.interface';
 import { Classroom, ClassroomDocument } from '../classrooms/schemas/classroom.schema';
+import { Invoice, InvoiceDocument } from '../invoices/schemas/invoice.schema';
 
 @Injectable()
 export class EnrollmentsService {
   constructor(
     @InjectModel(Enrollment.name) private enrollmentModel: SoftDeleteModel<EnrollmentDocument>,
-    @InjectModel(Classroom.name) private classroomModel: SoftDeleteModel<ClassroomDocument>
+    @InjectModel(Classroom.name) private classroomModel: SoftDeleteModel<ClassroomDocument>,
+    @InjectModel(Invoice.name) private invoiceModel: SoftDeleteModel<InvoiceDocument>
   ) { }
 
   async create(createEnrollmentDto: CreateEnrollmentDto, user: IUser) {
-    return await this.enrollmentModel.create({ ...createEnrollmentDto, createdBy: { _id: user._id, email: user.email } });
+    const enrollment = await this.enrollmentModel.create({ ...createEnrollmentDto, createdBy: { _id: user._id, email: user.email } });
+    const classroom = await this.classroomModel.findById(createEnrollmentDto.class_id)
+      .populate({ path: 'course_id', select: 'price' })
+      .lean()
+      .exec();
+    const coursePrice = Number((classroom?.course_id as { price?: string | number } | undefined)?.price || 0);
+    await this.invoiceModel.create({
+      enrollment_id: enrollment._id,
+      amount: coursePrice,
+      final_amount: coursePrice,
+      discount_amount: 0,
+      status: 'UNPAID',
+      createdBy: { _id: user._id, email: user.email },
+    });
+    return enrollment;
   }
 
   async findAll(currentPage: number, limit: number, qs: string) {
@@ -25,7 +41,15 @@ export class EnrollmentsService {
     delete filter.current; delete filter.pageSize;
     const defaultLimit = +limit || 10; const current = +currentPage || 1;
     const totalItems = await this.enrollmentModel.countDocuments(filter);
-    const result = await this.enrollmentModel.find(filter).select(projection).skip((current - 1) * defaultLimit).limit(defaultLimit).sort(sort as any).populate(population).exec();
+    const result = await this.enrollmentModel.find(filter)
+      .select(projection)
+      .skip((current - 1) * defaultLimit)
+      .limit(defaultLimit)
+      .sort(sort as any)
+      .populate({ path: 'student_id', select: 'name email phone age gender address' })
+      .populate('class_id')
+      .populate(population)
+      .exec();
     return { meta: { current, pageSize: defaultLimit, pages: Math.ceil(totalItems / defaultLimit), total: totalItems }, result };
   }
 

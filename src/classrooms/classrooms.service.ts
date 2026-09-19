@@ -21,7 +21,15 @@ export class ClassroomsService {
     delete filter.current; delete filter.pageSize;
     const defaultLimit = +limit || 10; const current = +currentPage || 1;
     const totalItems = await this.classroomModel.countDocuments(filter);
-    const result = await this.classroomModel.find(filter).select(projection).skip((current - 1) * defaultLimit).limit(defaultLimit).sort(sort as any).populate(population).exec();
+    const result = await this.classroomModel.find(filter)
+      .select(projection)
+      .skip((current - 1) * defaultLimit)
+      .limit(defaultLimit)
+      .sort(sort as any)
+      .populate({ path: 'course_id', select: 'name description level duration' })
+      .populate({ path: 'teacher_id', select: 'name email phone' })
+      .populate(population)
+      .exec();
     return {
       meta: {
         current,
