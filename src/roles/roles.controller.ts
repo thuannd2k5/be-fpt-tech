@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
@@ -7,7 +16,7 @@ import { IUser } from '../users/user.interface';
 
 @Controller('roles')
 export class RolesController {
-  constructor(private readonly rolesService: RolesService) { }
+  constructor(private readonly rolesService: RolesService) {}
 
   @Post()
   @ResponseMessage('Create new role')
@@ -17,7 +26,11 @@ export class RolesController {
 
   @Get()
   @ResponseMessage('Get all roles')
-  findAll(@Query('current') page: string, @Query('pageSize') limit: string, @Query() qs: string) {
+  findAll(
+    @Query('current') page: string,
+    @Query('pageSize') limit: string,
+    @Query() qs: string,
+  ) {
     return this.rolesService.findAll(+page, +limit, qs);
   }
 
@@ -29,7 +42,11 @@ export class RolesController {
 
   @Patch(':id')
   @ResponseMessage('Update role')
-  update(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto, @User() user: IUser) {
+  update(
+    @Param('id') id: string,
+    @Body() updateRoleDto: UpdateRoleDto,
+    @User() user: IUser,
+  ) {
     return this.rolesService.update(id, updateRoleDto, user);
   }
 

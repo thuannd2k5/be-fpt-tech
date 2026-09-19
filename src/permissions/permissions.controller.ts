@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { PermissionsService } from './permissions.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
@@ -7,17 +16,24 @@ import { IUser } from '../users/user.interface';
 
 @Controller('permissions')
 export class PermissionsController {
-  constructor(private readonly permissionsService: PermissionsService) { }
+  constructor(private readonly permissionsService: PermissionsService) {}
 
   @Post()
   @ResponseMessage('Create new permission')
-  create(@Body() createPermissionDto: CreatePermissionDto, @User() user: IUser) {
+  create(
+    @Body() createPermissionDto: CreatePermissionDto,
+    @User() user: IUser,
+  ) {
     return this.permissionsService.create(createPermissionDto, user);
   }
 
   @Get()
   @ResponseMessage('Get all permissions')
-  findAll(@Query('current') page: string, @Query('pageSize') limit: string, @Query() qs: string) {
+  findAll(
+    @Query('current') page: string,
+    @Query('pageSize') limit: string,
+    @Query() qs: string,
+  ) {
     return this.permissionsService.findAll(+page, +limit, qs);
   }
 
@@ -29,7 +45,10 @@ export class PermissionsController {
 
   @Patch(':id')
   @ResponseMessage('Update permission')
-  update(@Body() updatePermissionDto: UpdatePermissionDto, @User() user: IUser) {
+  update(
+    @Body() updatePermissionDto: UpdatePermissionDto,
+    @User() user: IUser,
+  ) {
     return this.permissionsService.update(updatePermissionDto, user);
   }
 

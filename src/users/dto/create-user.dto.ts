@@ -1,98 +1,97 @@
 import {
-    IsDateString,
-    IsEmail,
-    IsMongoId,
-    IsNotEmpty,
-    IsNumber,
-    IsOptional,
-    IsString,
-    MinLength,
+  IsDateString,
+  IsEmail,
+  IsMongoId,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MinLength,
 } from 'class-validator';
 import mongoose from 'mongoose';
 
 export class CreateUserDto {
-    @IsNotEmpty()
-    @IsString()
-    name: string;
+  @IsNotEmpty()
+  @IsString()
+  name: string;
 
-    @IsNotEmpty()
-    @IsString()
-    @MinLength(6)
-    password: string;
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(6)
+  password: string;
 
-    @IsOptional()
-    @IsString()
-    full_name?: string;
+  @IsOptional()
+  @IsString()
+  full_name?: string;
 
-    @IsNotEmpty()
-    @IsEmail()
-    email: string;
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
 
-    @IsOptional()
-    @IsString()
-    phone?: string;
+  @IsOptional()
+  @IsString()
+  phone?: string;
 
-    @IsOptional()
-    @IsString()
-    address?: string;
+  @IsOptional()
+  @IsString()
+  address?: string;
 
-    @IsOptional()
-    @IsNumber()
-    age?: number;
+  @IsOptional()
+  @IsNumber()
+  age?: number;
 
-    @IsOptional()
-    @IsString()
-    gender?: string;
+  @IsOptional()
+  @IsString()
+  gender?: string;
 
-    @IsOptional()
-    @IsDateString()
-    birthday?: Date;
+  @IsOptional()
+  @IsDateString()
+  birthday?: Date;
 
-    @IsNotEmpty()
-    @IsMongoId()
-    role: mongoose.Schema.Types.ObjectId;
+  @IsNotEmpty()
+  @IsMongoId()
+  role: mongoose.Schema.Types.ObjectId;
 
-    @IsOptional()
-    @IsString()
-    status?: string;
+  @IsOptional()
+  @IsString()
+  status?: string;
 }
 
 export class RegisterUserDto {
-    @IsNotEmpty()
-    @IsString()
-    name: string;
+  @IsNotEmpty()
+  @IsString()
+  name: string;
 
-    @IsNotEmpty()
-    @IsString()
-    @MinLength(6)
-    password: string;
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(6)
+  password: string;
 
-    @IsOptional()
-    @IsString()
-    full_name?: string;
+  @IsOptional()
+  @IsString()
+  full_name?: string;
 
-    @IsNotEmpty()
-    @IsEmail()
-    email: string;
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
 
-    @IsOptional()
-    @IsString()
-    phone?: string;
+  @IsOptional()
+  @IsString()
+  phone?: string;
 
-    @IsOptional()
-    @IsString()
-    address?: string;
+  @IsOptional()
+  @IsString()
+  address?: string;
 
-    @IsOptional()
-    @IsNumber()
-    age?: number;
+  @IsOptional()
+  @IsNumber()
+  age?: number;
 
-    @IsOptional()
-    @IsString()
-    gender?: string;
+  @IsOptional()
+  @IsString()
+  gender?: string;
 
-    @IsOptional()
-    @IsDateString()
-    birthday?: Date;
-
+  @IsOptional()
+  @IsDateString()
+  birthday?: Date;
 }

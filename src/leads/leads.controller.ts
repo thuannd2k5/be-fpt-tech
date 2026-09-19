@@ -1,13 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { LeadsService } from './leads.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
-import { Public, ResponseMessage, SkipCheckPermission, User } from '../decorator/customize';
+import {
+  Public,
+  ResponseMessage,
+  SkipCheckPermission,
+  User,
+} from '../decorator/customize';
 import { IUser } from '../users/user.interface';
 
 @Controller('leads')
 export class LeadsController {
-  constructor(private readonly leadsService: LeadsService) { }
+  constructor(private readonly leadsService: LeadsService) {}
 
   @Post()
   @Public()
@@ -18,7 +32,11 @@ export class LeadsController {
 
   @Get()
   @ResponseMessage('Get all leads')
-  findAll(@Query('current') page: string, @Query('pageSize') limit: string, @Query() qs: string) {
+  findAll(
+    @Query('current') page: string,
+    @Query('pageSize') limit: string,
+    @Query() qs: string,
+  ) {
     return this.leadsService.findAll(+page, +limit, qs);
   }
 

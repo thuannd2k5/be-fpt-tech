@@ -1,13 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { ClassroomsService } from './classrooms.service';
 import { CreateClassroomDto } from './dto/create-classroom.dto';
 import { UpdateClassroomDto } from './dto/update-classroom.dto';
-import { Public, ResponseMessage, SkipCheckPermission, User } from '../decorator/customize';
+import {
+  Public,
+  ResponseMessage,
+  SkipCheckPermission,
+  User,
+} from '../decorator/customize';
 import { IUser } from '../users/user.interface';
 
 @Controller('classrooms')
 export class ClassroomsController {
-  constructor(private readonly classroomsService: ClassroomsService) { }
+  constructor(private readonly classroomsService: ClassroomsService) {}
 
   @Post()
   @ResponseMessage('Create new classroom')
@@ -18,7 +32,11 @@ export class ClassroomsController {
   @Get()
   @Public()
   @ResponseMessage('Get all classrooms')
-  findAll(@Query('current') page: string, @Query('pageSize') limit: string, @Query() qs: string) {
+  findAll(
+    @Query('current') page: string,
+    @Query('pageSize') limit: string,
+    @Query() qs: string,
+  ) {
     return this.classroomsService.findAll(+page, +limit, qs);
   }
 

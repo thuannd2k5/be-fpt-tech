@@ -10,16 +10,24 @@ import { IUser } from '../users/user.interface';
 
 @Injectable()
 export class PermissionsService {
-  constructor(@InjectModel(Permission.name) private permissionModel: SoftDeleteModel<PermissionDocument>) { }
+  constructor(
+    @InjectModel(Permission.name)
+    private permissionModel: SoftDeleteModel<PermissionDocument>,
+  ) {}
 
   async create(createPermissionDto: CreatePermissionDto, user: IUser) {
     const { path, method } = createPermissionDto;
     const isExist = await this.permissionModel.findOne({ path, method });
 
     if (isExist) {
-      throw new BadRequestException(`permission với path ${path} và method ${method} đã tồn tại`)
+      throw new BadRequestException(
+        `permission với path ${path} và method ${method} đã tồn tại`,
+      );
     }
-    return await this.permissionModel.create({ ...createPermissionDto, createdBy: { _id: user._id, email: user.email } });
+    return await this.permissionModel.create({
+      ...createPermissionDto,
+      createdBy: { _id: user._id, email: user.email },
+    });
   }
 
   async findAll(currentPage: number, limit: number, qs: string) {
@@ -29,9 +37,22 @@ export class PermissionsService {
     const defaultLimit = +limit || 10;
     const current = +currentPage || 1;
     const totalItems = await this.permissionModel.countDocuments(filter);
-    const result = await this.permissionModel.find(filter).skip((current - 1) * defaultLimit)
-      .limit(defaultLimit).sort(sort as any).populate(population).exec();
-    return { meta: { current, pageSize: defaultLimit, pages: Math.ceil(totalItems / defaultLimit), total: totalItems }, result };
+    const result = await this.permissionModel
+      .find(filter)
+      .skip((current - 1) * defaultLimit)
+      .limit(defaultLimit)
+      .sort(sort as any)
+      .populate(population)
+      .exec();
+    return {
+      meta: {
+        current,
+        pageSize: defaultLimit,
+        pages: Math.ceil(totalItems / defaultLimit),
+        total: totalItems,
+      },
+      result,
+    };
   }
 
   async findOne(id: string) {
@@ -40,18 +61,25 @@ export class PermissionsService {
   }
 
   async update(updatePermissionDto: UpdatePermissionDto, user: IUser) {
-    if (!mongoose.Types.ObjectId.isValid(updatePermissionDto._id)) return 'not found permission';
-    return await this.permissionModel.updateOne({ _id: updatePermissionDto._id }, {
-      ...updatePermissionDto,
-      updatedBy: { _id: user._id, email: user.email }
-    });
+    if (!mongoose.Types.ObjectId.isValid(updatePermissionDto._id))
+      return 'not found permission';
+    return await this.permissionModel.updateOne(
+      { _id: updatePermissionDto._id },
+      {
+        ...updatePermissionDto,
+        updatedBy: { _id: user._id, email: user.email },
+      },
+    );
   }
 
   async remove(id: string, user: IUser) {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found permission';
-    await this.permissionModel.updateOne({ _id: id }, {
-      deletedBy: { _id: user._id, email: user.email }
-    });
+    await this.permissionModel.updateOne(
+      { _id: id },
+      {
+        deletedBy: { _id: user._id, email: user.email },
+      },
+    );
     return await this.permissionModel.delete({ _id: id });
   }
 }

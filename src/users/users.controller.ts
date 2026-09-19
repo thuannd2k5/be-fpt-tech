@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -9,7 +18,7 @@ import { UpdateMyProfileDto } from './dto/update-my-profile.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
   @ResponseMessage('Create new user')
@@ -23,7 +32,7 @@ export class UsersController {
   findAll(
     @Query('current') page: string,
     @Query('pageSize') limit: string,
-    @Query() qs: string
+    @Query() qs: string,
   ) {
     return this.usersService.findAll(+page, +limit, qs);
   }
@@ -31,7 +40,10 @@ export class UsersController {
   @Patch('me')
   @SkipCheckPermission()
   @ResponseMessage('Update my profile')
-  updateMyProfile(@Body() updateProfileDto: UpdateMyProfileDto, @User() user: IUser) {
+  updateMyProfile(
+    @Body() updateProfileDto: UpdateMyProfileDto,
+    @User() user: IUser,
+  ) {
     return this.usersService.updateMyProfile(user, updateProfileDto);
   }
 
@@ -43,7 +55,11 @@ export class UsersController {
 
   @Patch(':id')
   @ResponseMessage('Update user')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto, @User() user: IUser) {
+  update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @User() user: IUser,
+  ) {
     return this.usersService.update(id, updateUserDto, user);
   }
 

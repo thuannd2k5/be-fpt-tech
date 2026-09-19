@@ -5,8 +5,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Lead, LeadSchema } from './schemas/lead.schema';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Lead.name, schema: LeadSchema }])],
+  imports: [
+    MongooseModule.forFeature([{ name: Lead.name, schema: LeadSchema }]),
+  ],
   controllers: [LeadsController],
   providers: [LeadsService],
 })
-export class LeadsModule { }
+export class LeadsModule {}

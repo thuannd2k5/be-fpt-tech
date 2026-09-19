@@ -10,12 +10,14 @@ import { IUser } from '../users/user.interface';
 
 @Injectable()
 export class LeadsService {
-  constructor(@InjectModel(Lead.name) private leadModel: SoftDeleteModel<LeadDocument>) { }
+  constructor(
+    @InjectModel(Lead.name) private leadModel: SoftDeleteModel<LeadDocument>,
+  ) {}
 
   async create(createLeadDto: CreateLeadDto, user: IUser) {
     return await this.leadModel.create({
       ...createLeadDto,
-      ...(user ? { createdBy: { _id: user._id, email: user.email } } : {})
+      ...(user ? { createdBy: { _id: user._id, email: user.email } } : {}),
     });
   }
 
@@ -27,7 +29,8 @@ export class LeadsService {
     const defaultLimit = +limit || 10;
     const current = +currentPage || 1;
     const totalItems = await this.leadModel.countDocuments(filter);
-    const result = await this.leadModel.find(filter)
+    const result = await this.leadModel
+      .find(filter)
       .select(projection)
       .skip((current - 1) * defaultLimit)
       .limit(defaultLimit)
@@ -40,9 +43,9 @@ export class LeadsService {
         current,
         pageSize: defaultLimit,
         pages: Math.ceil(totalItems / defaultLimit),
-        total: totalItems
+        total: totalItems,
       },
-      result
+      result,
     };
   }
 
@@ -52,22 +55,31 @@ export class LeadsService {
   }
 
   async findAssignedToMe(user: IUser) {
-    return this.leadModel.find({ consultant_id: user._id }).sort({ createdAt: -1 }).exec();
+    return this.leadModel
+      .find({ consultant_id: user._id })
+      .sort({ createdAt: -1 })
+      .exec();
   }
 
   async update(updateLeadDto: UpdateLeadDto, user: IUser) {
-    return await this.leadModel.updateOne({ _id: updateLeadDto._id }, {
-      ...updateLeadDto,
-      updatedBy: { _id: user._id, email: user.email }
-    });
+    return await this.leadModel.updateOne(
+      { _id: updateLeadDto._id },
+      {
+        ...updateLeadDto,
+        updatedBy: { _id: user._id, email: user.email },
+      },
+    );
   }
 
   async remove(id: string, user: IUser) {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found lead';
 
-    await this.leadModel.updateOne({ _id: id }, {
-      deletedBy: { _id: user._id, email: user.email }
-    });
+    await this.leadModel.updateOne(
+      { _id: id },
+      {
+        deletedBy: { _id: user._id, email: user.email },
+      },
+    );
     return await this.leadModel.delete({ _id: id });
   }
 }

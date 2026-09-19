@@ -10,23 +10,35 @@ import { IUser } from '../users/user.interface';
 
 @Injectable()
 export class ClassroomsService {
-  constructor(@InjectModel(Classroom.name) private classroomModel: SoftDeleteModel<ClassroomDocument>) { }
+  constructor(
+    @InjectModel(Classroom.name)
+    private classroomModel: SoftDeleteModel<ClassroomDocument>,
+  ) {}
 
   async create(createClassroomDto: CreateClassroomDto, user: IUser) {
-    return await this.classroomModel.create({ ...createClassroomDto, createdBy: { _id: user._id, email: user.email } });
+    return await this.classroomModel.create({
+      ...createClassroomDto,
+      createdBy: { _id: user._id, email: user.email },
+    });
   }
 
   async findAll(currentPage: number, limit: number, qs: string) {
     const { filter, sort, population, projection } = aqp(qs);
-    delete filter.current; delete filter.pageSize;
-    const defaultLimit = +limit || 10; const current = +currentPage || 1;
+    delete filter.current;
+    delete filter.pageSize;
+    const defaultLimit = +limit || 10;
+    const current = +currentPage || 1;
     const totalItems = await this.classroomModel.countDocuments(filter);
-    const result = await this.classroomModel.find(filter)
+    const result = await this.classroomModel
+      .find(filter)
       .select(projection)
       .skip((current - 1) * defaultLimit)
       .limit(defaultLimit)
       .sort(sort as any)
-      .populate({ path: 'course_id', select: 'name description level duration' })
+      .populate({
+        path: 'course_id',
+        select: 'name description level duration',
+      })
       .populate({ path: 'teacher_id', select: 'name email phone' })
       .populate(population)
       .exec();
@@ -35,31 +47,43 @@ export class ClassroomsService {
         current,
         pageSize: defaultLimit,
         pages: Math.ceil(totalItems / defaultLimit),
-        total: totalItems
+        total: totalItems,
       },
-      result
+      result,
     };
   }
 
   async findOne(id: string) {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found classroom';
-    return await this.classroomModel.findOne({ _id: id }).populate('course_id teacher_id');
+    return await this.classroomModel
+      .findOne({ _id: id })
+      .populate('course_id teacher_id');
   }
 
   async findTeaching(user: IUser) {
-    return this.classroomModel.find({ teacher_id: user._id })
+    return this.classroomModel
+      .find({ teacher_id: user._id })
       .populate('course_id teacher_id', 'name email')
       .sort({ start_time: 1 })
       .exec();
   }
 
   async update(updateClassroomDto: UpdateClassroomDto, user: IUser) {
-    return await this.classroomModel.updateOne({ _id: updateClassroomDto._id }, { ...updateClassroomDto, updatedBy: { _id: user._id, email: user.email } });
+    return await this.classroomModel.updateOne(
+      { _id: updateClassroomDto._id },
+      {
+        ...updateClassroomDto,
+        updatedBy: { _id: user._id, email: user.email },
+      },
+    );
   }
 
   async remove(id: string, user: IUser) {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found classroom';
-    await this.classroomModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } });
+    await this.classroomModel.updateOne(
+      { _id: id },
+      { deletedBy: { _id: user._id, email: user.email } },
+    );
     return await this.classroomModel.delete({ _id: id });
   }
 }
