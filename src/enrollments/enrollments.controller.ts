@@ -10,6 +10,7 @@ export class EnrollmentsController {
   constructor(private readonly enrollmentsService: EnrollmentsService) { }
 
   @Post()
+  @SkipCheckPermission()
   @ResponseMessage('Create new enrollment')
   create(@Body() createEnrollmentDto: CreateEnrollmentDto, @User() user: IUser) {
     return this.enrollmentsService.create(createEnrollmentDto, user);

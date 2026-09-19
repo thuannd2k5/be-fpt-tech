@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -19,6 +19,20 @@ export class EnrollmentsService {
   ) { }
 
   async create(createEnrollmentDto: CreateEnrollmentDto, user: IUser) {
+    const roleName = user.role?.name?.trim().toUpperCase();
+    const isManager = roleName === 'MANAGER' || roleName === 'QUAN LY';
+    if (!isManager && String(createEnrollmentDto.student_id) !== String(user._id)) {
+      throw new ForbiddenException('Bạn chỉ có thể đăng ký cho tài khoản của mình');
+    }
+
+    const existingEnrollment = await this.enrollmentModel.findOne({
+      student_id: createEnrollmentDto.student_id,
+      class_id: createEnrollmentDto.class_id,
+    });
+    if (existingEnrollment) {
+      throw new BadRequestException('Học viên đã đăng ký lớp học này');
+    }
+
     const enrollment = await this.enrollmentModel.create({ ...createEnrollmentDto, createdBy: { _id: user._id, email: user.email } });
     const classroom = await this.classroomModel.findById(createEnrollmentDto.class_id)
       .populate({ path: 'course_id', select: 'price' })
