@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
@@ -7,7 +16,7 @@ import { IUser } from '../users/user.interface';
 
 @Controller('courses')
 export class CoursesController {
-  constructor(private readonly coursesService: CoursesService) { }
+  constructor(private readonly coursesService: CoursesService) {}
 
   @Post()
   @ResponseMessage('Create new course')
@@ -18,7 +27,11 @@ export class CoursesController {
   @Get()
   @Public()
   @ResponseMessage('Get all courses')
-  findAll(@Query('current') page: string, @Query('pageSize') limit: string, @Query() qs: string) {
+  findAll(
+    @Query('current') page: string,
+    @Query('pageSize') limit: string,
+    @Query() qs: string,
+  ) {
     return this.coursesService.findAll(+page, +limit, qs);
   }
 

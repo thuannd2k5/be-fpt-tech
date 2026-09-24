@@ -1,61 +1,67 @@
-import { Body, Controller, Get, Post, Req, Res, UseGuards } from "@nestjs/common";
-import { AuthService } from "./auth.service";
-import { LocalAuthGuard } from "./local-auth.guard";
-import { Public, ResponseMessage, User } from "../decorator/customize";
-import { RegisterUserDto } from "../users/dto/create-user.dto";
-import { Request, Response } from "express";
-import { IUser } from "../users/user.interface";
-import { RolesService } from "../roles/roles.service";
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { LocalAuthGuard } from './local-auth.guard';
+import { Public, ResponseMessage, User } from '../decorator/customize';
+import { RegisterUserDto } from '../users/dto/create-user.dto';
+import { Request, Response } from 'express';
+import { IUser } from '../users/user.interface';
+import { RolesService } from '../roles/roles.service';
 
-
-@Controller("/auth")
+@Controller('/auth')
 export class AuthController {
-    constructor(
-        private authService: AuthService,
-        private roleService: RolesService
-    ) { }
+  constructor(
+    private authService: AuthService,
+    private roleService: RolesService,
+  ) {}
 
-    @Public()
-    @UseGuards(LocalAuthGuard)
-    @Post("login")
-    @ResponseMessage('Login successfully')
-    async login(
-        @Req() req,
-        @Res({ passthrough: true }) response: Response
-    ) {
-        return this.authService.login(req.user, response);
-    }
+  @Public()
+  @UseGuards(LocalAuthGuard)
+  @Post('login')
+  @ResponseMessage('Login successfully')
+  async login(@Req() req, @Res({ passthrough: true }) response: Response) {
+    return this.authService.login(req.user, response);
+  }
 
-    @Public()
-    @Post('/register')
-    @ResponseMessage('Register a new user')
-    handleRegister(@Body() registerUserDto: RegisterUserDto) {
-        return this.authService.register(registerUserDto);
-    }
+  @Public()
+  @Post('/register')
+  @ResponseMessage('Register a new user')
+  handleRegister(@Body() registerUserDto: RegisterUserDto) {
+    return this.authService.register(registerUserDto);
+  }
 
+  @Get('/account')
+  @ResponseMessage('Get user account information')
+  async handleGetAccount(@User() user: IUser) {
+    const temp = (await this.roleService.findOne(user.role._id)) as any;
+    user.permissions = temp.permissions;
+    return { user };
+  }
 
-    @Get('/account')
-    @ResponseMessage('Get user account information')
-    async handleGetAccount(@User() user: IUser) {
-        const temp = await this.roleService.findOne(user.role._id) as any;
-        user.permissions = temp.permissions;
-        return { user };
-    }
+  @Public()
+  @Get('/refresh')
+  @ResponseMessage('Refresh user token')
+  handleRefreshToken(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const refreshToken = request.cookies['refresh_token'];
+    return this.authService.processNewToken(refreshToken, response);
+  }
 
-
-    @Public()
-    @Get('/refresh')
-    @ResponseMessage('Refresh user token')
-    handleRefreshToken(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
-        const refreshToken = request.cookies['refresh_token'];
-        return this.authService.processNewToken(refreshToken, response);
-    }
-
-    @Post('/logout')
-    @ResponseMessage('Logout User')
-    handleLogout(
-        @User() user: IUser,
-        @Res({ passthrough: true }) response: Response) {
-        return this.authService.logout(user, response);
-    }
+  @Post('/logout')
+  @ResponseMessage('Logout User')
+  handleLogout(
+    @User() user: IUser,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    return this.authService.logout(user, response);
+  }
 }

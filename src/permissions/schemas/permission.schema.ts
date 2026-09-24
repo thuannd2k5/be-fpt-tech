@@ -5,35 +5,35 @@ export type PermissionDocument = HydratedDocument<Permission>;
 
 @Schema({ timestamps: true })
 export class Permission {
-    @Prop()
-    name: string;
+  @Prop()
+  name: string;
 
-    @Prop()
-    path: string;
+  @Prop()
+  path: string;
 
-    @Prop()
-    method: string;
+  @Prop()
+  method: string;
 
-    @Prop()
-    module: string;
+  @Prop()
+  module: string;
 
-    @Prop({ type: Object })
-    createdBy: {
-        _id: mongoose.Schema.Types.ObjectId,
-        email: string
-    };
+  @Prop({ type: Object })
+  createdBy: {
+    _id: mongoose.Schema.Types.ObjectId;
+    email: string;
+  };
 
-    @Prop({ type: Object })
-    updatedBy: {
-        _id: mongoose.Schema.Types.ObjectId,
-        email: string
-    };
+  @Prop({ type: Object })
+  updatedBy: {
+    _id: mongoose.Schema.Types.ObjectId;
+    email: string;
+  };
 
-    @Prop({ type: Object })
-    deletedBy: {
-        _id: mongoose.Schema.Types.ObjectId,
-        email: string
-    };
+  @Prop({ type: Object })
+  deletedBy: {
+    _id: mongoose.Schema.Types.ObjectId;
+    email: string;
+  };
 }
 
 export const PermissionSchema = SchemaFactory.createForClass(Permission);

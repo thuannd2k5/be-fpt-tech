@@ -3,8 +3,8 @@ import { CreateCourseDto } from './create-course.dto';
 import { IsMongoId, IsNotEmpty } from 'class-validator';
 
 export class UpdateCourseDto extends PartialType(CreateCourseDto) {
-    @IsNotEmpty()
-    @IsMongoId()
-    _id: string;
-    // skd
+  @IsNotEmpty()
+  @IsMongoId()
+  _id: string;
+  // skd
 }

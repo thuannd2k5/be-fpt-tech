@@ -30,19 +30,17 @@ import MongooseDelete from 'mongoose-delete';
         connectionFactory: (connection) => {
           connection.plugin(MongooseDelete, {
             overrideMethods: 'all',
-            deletedAt: true
+            deletedAt: true,
           });
           return connection;
-        }
+        },
       }),
       inject: [ConfigService],
     }),
-    ConfigModule.forRoot(
-      {
-        isGlobal: true,
-        envFilePath: '.env',
-      }
-    ),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
     UsersModule,
     AuthModule,
     RolesModule,
@@ -56,14 +54,15 @@ import MongooseDelete from 'mongoose-delete';
     NotificationsModule,
     ConversationsModule,
     MessagesModule,
-    DatabasesModule
+    DatabasesModule,
   ],
   controllers: [AppController],
-  providers: [AppService,
+  providers: [
+    AppService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

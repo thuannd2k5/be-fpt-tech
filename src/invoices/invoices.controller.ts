@@ -1,13 +1,26 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { InvoicesService } from './invoices.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
-import { ResponseMessage, SkipCheckPermission, User } from '../decorator/customize';
+import {
+  ResponseMessage,
+  SkipCheckPermission,
+  User,
+} from '../decorator/customize';
 import { IUser } from '../users/user.interface';
 
 @Controller('invoices')
 export class InvoicesController {
-  constructor(private readonly invoicesService: InvoicesService) { }
+  constructor(private readonly invoicesService: InvoicesService) {}
 
   @Post()
   @ResponseMessage('Create new invoice')
@@ -17,7 +30,11 @@ export class InvoicesController {
 
   @Get()
   @ResponseMessage('Get all invoices')
-  findAll(@Query('current') page: string, @Query('pageSize') limit: string, @Query() qs: string) {
+  findAll(
+    @Query('current') page: string,
+    @Query('pageSize') limit: string,
+    @Query() qs: string,
+  ) {
     return this.invoicesService.findAll(+page, +limit, qs);
   }
 

@@ -16,23 +16,21 @@ async function bootstrap() {
 
   app.useGlobalInterceptors(new TransformInterceptor(reflector));
 
-  const port = configService.get('PORT');
+  const port = Number(configService.get<string>('PORT') ?? 3000);
 
   app.use(cookieParser());
 
-  app.enableCors(
-    {
-      "origin": true,
-      "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-      "preflightContinue": false,
-      credentials: true,
-    }
-  );
+  app.enableCors({
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    preflightContinue: false,
+    credentials: true,
+  });
 
   app.setGlobalPrefix('api');
   app.enableVersioning({
     type: VersioningType.URI, //v
-    defaultVersion: ['1', '2'] // 1->v1,2->v2
+    defaultVersion: ['1', '2'], // 1->v1,2->v2
   });
 
   await app.listen(port);

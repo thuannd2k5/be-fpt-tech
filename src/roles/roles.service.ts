@@ -11,21 +11,25 @@ import { ADMIN_ROLE } from '../databases/sample';
 
 @Injectable()
 export class RolesService {
-  constructor(@InjectModel(Role.name) private roleModel: SoftDeleteModel<RoleDocument>) { }
+  constructor(
+    @InjectModel(Role.name) private roleModel: SoftDeleteModel<RoleDocument>,
+  ) {}
 
   async create(createRoleDto: CreateRoleDto, user: IUser) {
     const { name } = createRoleDto;
     const isExist = await this.roleModel.findOne({ name });
     if (isExist) {
-      throw new BadRequestException(`Name ${name} đã tồn tại , vui lòng nhập name khác`)
+      throw new BadRequestException(
+        `Name ${name} đã tồn tại , vui lòng nhập name khác`,
+      );
     }
     const role = await this.roleModel.create({
       ...createRoleDto,
       createdBy: {
         _id: user._id,
-        email: user.email
-      }
-    })
+        email: user.email,
+      },
+    });
     return role;
   }
 
@@ -34,12 +38,13 @@ export class RolesService {
     delete filter.current;
     delete filter.pageSize;
 
-    let offset = (+currentPage - 1) * (+limit);
+    let offset = (+currentPage - 1) * +limit;
     let defaultLimit = +limit ? +limit : 10;
     const totalItems = (await this.roleModel.find(filter)).length;
-    const totalPages = Math.ceil(totalItems / defaultLimit)
+    const totalPages = Math.ceil(totalItems / defaultLimit);
 
-    const result = await this.roleModel.find(filter)
+    const result = await this.roleModel
+      .find(filter)
       .skip(offset)
       .limit(defaultLimit)
       .sort(sort as any)
@@ -52,15 +57,15 @@ export class RolesService {
         current: currentPage, //trang hiện tại
         pageSize: limit, //số lượng bản ghi đã lấy
         pages: totalPages, //tổng số trang với điều kiện query
-        total: totalItems // tổng số phần tử (số bản ghi)
+        total: totalItems, // tổng số phần tử (số bản ghi)
       },
-      result //kết quả query
-    }
+      result, //kết quả query
+    };
   }
 
   async findOne(id: string) {
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new BadRequestException("Role này khong duoc tim thay")
+      throw new BadRequestException('Role này khong duoc tim thay');
     }
     const role = await this.roleModel.findById({ _id: id });
     if (!role) {
@@ -68,39 +73,45 @@ export class RolesService {
     }
 
     return role.populate({
-      path: "permissions",
-      select: { _id: 1, path: 1, name: 1, method: 1, module: 1 }
-    })
+      path: 'permissions',
+      select: { _id: 1, path: 1, name: 1, method: 1, module: 1 },
+    });
   }
 
   async update(id: string, updateRoleDto: UpdateRoleDto, user: IUser) {
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new BadRequestException("Role này khong duoc tim thay")
+      throw new BadRequestException('Role này khong duoc tim thay');
     }
-    return await this.roleModel.updateOne({ _id: id }, {
-      ...updateRoleDto,
-      updatedBy: {
-        _id: user._id,
-        email: user.email
-      }
-    })
+    return await this.roleModel.updateOne(
+      { _id: id },
+      {
+        ...updateRoleDto,
+        updatedBy: {
+          _id: user._id,
+          email: user.email,
+        },
+      },
+    );
   }
 
   async remove(id: string, user: IUser) {
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new BadRequestException("Role này khong duoc tim thay")
+      throw new BadRequestException('Role này khong duoc tim thay');
     }
     const foundRole = await this.roleModel.findById({ _id: id });
     if (foundRole.name === ADMIN_ROLE) {
-      throw new BadRequestException("Không thể xóa role ADMIN")
+      throw new BadRequestException('Không thể xóa role ADMIN');
     }
 
-    await this.roleModel.updateOne({ _id: id }, {
-      deletedBy: {
-        _id: user._id,
-        email: user.email
-      }
-    })
+    await this.roleModel.updateOne(
+      { _id: id },
+      {
+        deletedBy: {
+          _id: user._id,
+          email: user.email,
+        },
+      },
+    );
     return this.roleModel.delete({ _id: id });
   }
 }
