@@ -55,6 +55,14 @@ export class CreateUserDto {
     @IsOptional()
     @IsString()
     status?: string;
+
+    @IsOptional()
+    @IsString()
+    subject?: string;
+
+    @IsOptional()
+    @IsNumber()
+    experience_years?: number;
 }
 
 export class RegisterUserDto {
@@ -95,4 +103,11 @@ export class RegisterUserDto {
     @IsDateString()
     birthday?: Date;
 
+    @IsOptional()
+    @IsString()
+    subject?: string;
+
+    @IsOptional()
+    @IsNumber()
+    experience_years?: number;
 }
