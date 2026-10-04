@@ -29,7 +29,7 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto, user: IUser) {
-    const { name, password, role, email, phone, age, gender, address, birthday } = createUserDto;
+    const { name, password, role, email, phone, age, gender, address, birthday, subject, experience_years } = createUserDto;
     const hashPassword = await this.hashPassword(password);
     const isExist = await this.userModel.findOne({ email });
     if (isExist) {
@@ -45,6 +45,8 @@ export class UsersService {
       address,
       birthday,
       role,
+      subject,
+      experience_years,
       createdBy: {
         _id: user._id,
         email: user.email
@@ -55,13 +57,14 @@ export class UsersService {
   }
 
   async register(user: RegisterUserDto) {
-    const { name, email, password, age, gender, address } = user;
+    const { name, email, password, age, gender, address, subject, experience_years } = user;
     const hashPassword = await this.hashPassword(password);
     const isExist = await this.userModel.findOne({ email });
     if (isExist) {
       throw new BadRequestException(`Email ${email} da ton tai tren he thong. Vui long su dung email khac!`);
     }
     const roleUser = await this.roleModel.findOne({ name: USER_ROLE });
+    const isTeacher = !!(subject || (experience_years !== undefined && experience_years !== null));
     let newRegister = await this.userModel.create({
       name,
       email,
@@ -69,7 +72,10 @@ export class UsersService {
       age,
       gender,
       address,
-      role: roleUser?._id
+      subject,
+      experience_years,
+      role: roleUser?._id,
+      status: isTeacher ? 'PENDING' : 'ACTIVE',
     })
     return newRegister;
   }
@@ -187,6 +193,107 @@ export class UsersService {
   findUserByToken = async (refreshToken: string) => {
     return await this.userModel.findOne({ refreshToken })
       .populate({ path: "role", select: { name: 1 } });
+  }
+
+  async approveTeacher(id: string, user: IUser) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('ID người dùng không hợp lệ');
+    }
+
+    const teacherRole = await this.roleModel.findOne({ name: { $regex: /^TEACHER$/i } });
+    if (!teacherRole) {
+      throw new BadRequestException('Không tìm thấy Role TEACHER trong hệ thống');
+    }
+
+    const targetUser = await this.userModel.findById(id);
+    if (!targetUser) {
+      throw new BadRequestException('Không tìm thấy người dùng');
+    }
+
+    await this.userModel.updateOne(
+      { _id: id },
+      {
+        role: teacherRole._id,
+        status: 'ACTIVE',
+        updatedBy: {
+          _id: user._id,
+          email: user.email,
+        },
+      }
+    );
+
+    return await this.userModel.findById(id)
+      .select('-password')
+      .populate({ path: 'role', select: { _id: 1, name: 1 } });
+  }
+
+  async rejectTeacher(id: string, user: IUser) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('ID người dùng không hợp lệ');
+    }
+
+    const targetUser = await this.userModel.findById(id);
+    if (!targetUser) {
+      throw new BadRequestException('Không tìm thấy người dùng');
+    }
+
+    await this.userModel.updateOne(
+      { _id: id },
+      {
+        status: 'REJECTED',
+        updatedBy: {
+          _id: user._id,
+          email: user.email,
+        },
+      }
+    );
+
+    return await this.userModel.findById(id)
+      .select('-password')
+      .populate({ path: 'role', select: { _id: 1, name: 1 } });
+  }
+
+  async getPendingTeachers(currentPage: number = 1, limit: number = 10) {
+    const teacherRole = await this.roleModel.findOne({ name: { $regex: /^TEACHER$/i } });
+    const teacherRoleId = teacherRole?._id;
+
+    const offset = (+currentPage - 1) * (+limit);
+    const defaultLimit = +limit ? +limit : 10;
+
+    const filter: any = {
+      $and: [
+        {
+          $or: [
+            { status: 'PENDING' },
+            {
+              subject: { $exists: true, $nin: ['', null] },
+              status: { $nin: ['REJECTED', 'ACTIVE'] }
+            }
+          ]
+        },
+        ...(teacherRoleId ? [{ role: { $ne: teacherRoleId } }] : [])
+      ]
+    };
+
+    const totalItems = await this.userModel.countDocuments(filter);
+    const totalPages = Math.ceil(totalItems / defaultLimit);
+
+    const result = await this.userModel.find(filter)
+      .skip(offset)
+      .limit(defaultLimit)
+      .sort({ createdAt: -1 })
+      .select('-password')
+      .populate({ path: 'role', select: { _id: 1, name: 1 } });
+
+    return {
+      meta: {
+        current: currentPage,
+        pageSize: defaultLimit,
+        pages: totalPages,
+        total: totalItems
+      },
+      result
+    };
   }
 }
 
