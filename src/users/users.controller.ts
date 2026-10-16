@@ -19,6 +19,7 @@ export class UsersController {
   }
 
   @Get()
+  @SkipCheckPermission()
   @ResponseMessage('Get all users')
   findAll(
     @Query('current') page: string,
@@ -26,6 +27,17 @@ export class UsersController {
     @Query() qs: string
   ) {
     return this.usersService.findAll(+page, +limit, qs);
+  }
+
+  @Get('contacts')
+  @SkipCheckPermission()
+  @ResponseMessage('Get contacts list')
+  getContacts(
+    @Query('current') page: string,
+    @Query('pageSize') limit: string,
+    @Query() qs: string
+  ) {
+    return this.usersService.findAll(+page || 1, +limit || 1000, qs);
   }
 
   @Patch('me')

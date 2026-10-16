@@ -27,6 +27,13 @@ export class ConversationsController {
     return this.conversationsService.findAll(+page, +limit, qs);
   }
 
+  @Get('my-conversations')
+  @SkipCheckPermission()
+  @ResponseMessage('Get my conversations')
+  findMyConversations(@User() user: IUser) {
+    return this.conversationsService.findMyConversations(user);
+  }
+
   @Get(':id')
   @SkipCheckPermission()
   @ResponseMessage('Get conversation by id')

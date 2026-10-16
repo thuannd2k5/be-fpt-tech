@@ -15,20 +15,105 @@ export class ConversationsService {
     private conversationModel: SoftDeleteModel<ConversationDocument>,
   ) {}
 
+  private userPopulateOptions() {
+    return [
+      {
+        path: 'participants',
+        select: '_id name email role phone avatar status',
+        populate: { path: 'role', select: '_id name' },
+      },
+      {
+        path: 'participant_id',
+        select: '_id name email role phone avatar status',
+        populate: { path: 'role', select: '_id name' },
+      },
+    ];
+  }
+
   async create(createConversationDto: CreateConversationDto, user: IUser) {
-    const participantsSet = new Set<string>(createConversationDto.participants || []);
-    participantsSet.add(user._id);
-    if (createConversationDto.participant_id) {
-      participantsSet.add(createConversationDto.participant_id);
+    const userIdStr = String(user._id);
+    const userObjId = mongoose.Types.ObjectId.isValid(userIdStr) ? new mongoose.Types.ObjectId(userIdStr) : null;
+
+    let targetIdStr = createConversationDto.participant_id;
+    if (!targetIdStr && Array.isArray(createConversationDto.participants)) {
+      targetIdStr = createConversationDto.participants.find(p => p && String(p) !== userIdStr);
+    }
+    const targetObjId = (targetIdStr && mongoose.Types.ObjectId.isValid(targetIdStr)) ? new mongoose.Types.ObjectId(String(targetIdStr)) : null;
+
+    // Tìm kiếm hội thoại 1-1 đã có sẵn
+    if (targetObjId && (!createConversationDto.type || createConversationDto.type === 'DIRECT')) {
+      const orConditions: any[] = [];
+      if (userObjId) {
+        orConditions.push(
+          { participants: { $all: [userObjId, targetObjId] } },
+          { participant_id: targetObjId, 'createdBy._id': userObjId },
+          { participant_id: userObjId, 'createdBy._id': targetObjId },
+        );
+      }
+      orConditions.push(
+        { participants: { $all: [userIdStr, String(targetIdStr)] } },
+        { participant_id: String(targetIdStr), 'createdBy._id': userObjId || userIdStr },
+      );
+
+      const existing = await this.conversationModel
+        .findOne({ $or: orConditions })
+        .populate(this.userPopulateOptions());
+      if (existing) {
+        return existing;
+      }
     }
 
-    const participantsArray = Array.from(participantsSet);
+    // Xây dựng danh sách participants hợp lệ
+    const validIdsSet = new Set<string>();
+    if (userObjId) validIdsSet.add(userIdStr);
+    if (targetObjId) validIdsSet.add(String(targetIdStr));
 
-    return await this.conversationModel.create({
-      ...createConversationDto,
+    if (Array.isArray(createConversationDto.participants)) {
+      for (const p of createConversationDto.participants) {
+        if (p && mongoose.Types.ObjectId.isValid(p)) {
+          validIdsSet.add(String(p));
+        }
+      }
+    }
+
+    const participantsArray = Array.from(validIdsSet).map(id => new mongoose.Types.ObjectId(id));
+
+    const created = await this.conversationModel.create({
+      title: createConversationDto.title || 'Cuộc trò chuyện',
+      type: createConversationDto.type || 'DIRECT',
+      participant_id: targetObjId || undefined,
       participants: participantsArray,
-      createdBy: { _id: user._id, email: user.email },
+      createdBy: { _id: userObjId || user._id, email: user.email },
     });
+
+    return await this.conversationModel
+      .findById(created._id)
+      .populate(this.userPopulateOptions());
+  }
+
+  async findMyConversations(user: IUser) {
+    if (!user?._id) return [];
+    const userIdStr = String(user._id);
+    const userObjId = mongoose.Types.ObjectId.isValid(userIdStr) ? new mongoose.Types.ObjectId(userIdStr) : null;
+
+    const conditions: any[] = [
+      { participants: userIdStr },
+      { participant_id: userIdStr },
+      { 'createdBy._id': userIdStr },
+    ];
+    if (userObjId) {
+      conditions.push(
+        { participants: userObjId },
+        { participant_id: userObjId },
+        { 'createdBy._id': userObjId },
+      );
+    }
+
+    return await this.conversationModel
+      .find({ $or: conditions })
+      .sort({ updatedAt: -1, last_message_at: -1 })
+      .populate(this.userPopulateOptions())
+      .exec();
   }
 
   async findAll(currentPage: number, limit: number, qs: string) {
@@ -44,7 +129,7 @@ export class ConversationsService {
       .skip((current - 1) * defaultLimit)
       .limit(defaultLimit)
       .sort((sort as any) || { updatedAt: -1 })
-      .populate(population)
+      .populate(this.userPopulateOptions())
       .exec();
 
     return {
@@ -62,7 +147,7 @@ export class ConversationsService {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found conversation';
     return await this.conversationModel
       .findOne({ _id: id })
-      .populate('participants participant_id');
+      .populate(this.userPopulateOptions());
   }
 
   async update(updateConversationDto: UpdateConversationDto, user: IUser) {
