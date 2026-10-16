@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestj
 import { ClassroomsService } from './classrooms.service';
 import { CreateClassroomDto } from './dto/create-classroom.dto';
 import { UpdateClassroomDto } from './dto/update-classroom.dto';
-import { Public, ResponseMessage, User } from '../decorator/customize';
+import { Public, ResponseMessage, SkipCheckPermission, User } from '../decorator/customize';
 import { IUser } from '../users/user.interface';
 
 @Controller('classrooms')
@@ -20,6 +20,13 @@ export class ClassroomsController {
   @ResponseMessage('Get all classrooms')
   findAll(@Query('current') page: string, @Query('pageSize') limit: string, @Query() qs: string) {
     return this.classroomsService.findAll(+page, +limit, qs);
+  }
+
+  @Get('teaching')
+  @SkipCheckPermission()
+  @ResponseMessage('Get my teaching classrooms')
+  findTeaching(@User() user: IUser) {
+    return this.classroomsService.findTeaching(user);
   }
 
   @Get(':id')

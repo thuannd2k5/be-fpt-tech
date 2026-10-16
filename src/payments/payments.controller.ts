@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestj
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
-import { ResponseMessage, User } from '../decorator/customize';
+import { ResponseMessage, SkipCheckPermission, User } from '../decorator/customize';
 import { IUser } from '../users/user.interface';
 
 @Controller('payments')
@@ -19,6 +19,13 @@ export class PaymentsController {
   @ResponseMessage('Get all payments')
   findAll(@Query('current') page: string, @Query('pageSize') limit: string, @Query() qs: string) {
     return this.paymentsService.findAll(+page, +limit, qs);
+  }
+
+  @Get('me')
+  @SkipCheckPermission()
+  @ResponseMessage('Get my payments')
+  findMine(@User() user: IUser) {
+    return this.paymentsService.findMine(user);
   }
 
   @Get(':id')

@@ -4,6 +4,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ResponseMessage, User } from '../decorator/customize';
 import { IUser } from './user.interface';
+import { SkipCheckPermission } from '../decorator/customize';
+import { UpdateMyProfileDto } from './dto/update-my-profile.dto';
 
 @Controller('users')
 export class UsersController {
@@ -24,6 +26,51 @@ export class UsersController {
     @Query() qs: string
   ) {
     return this.usersService.findAll(+page, +limit, qs);
+  }
+
+  @Patch('me')
+  @SkipCheckPermission()
+  @ResponseMessage('Update my profile')
+  updateMyProfile(@Body() updateProfileDto: UpdateMyProfileDto, @User() user: IUser) {
+    return this.usersService.updateMyProfile(user, updateProfileDto);
+  }
+
+  @Get('pending-teachers')
+  @SkipCheckPermission()
+  @ResponseMessage('Get list of pending teachers')
+  getPendingTeachers(
+    @Query('current') page: string,
+    @Query('pageSize') limit: string,
+  ) {
+    return this.usersService.getPendingTeachers(+page || 1, +limit || 10);
+  }
+
+  @Patch('approve-teacher/:id')
+  @SkipCheckPermission()
+  @ResponseMessage('Approve teacher')
+  approveTeacher(@Param('id') id: string, @User() user: IUser) {
+    return this.usersService.approveTeacher(id, user);
+  }
+
+  @Post('approve-teacher/:id')
+  @SkipCheckPermission()
+  @ResponseMessage('Approve teacher')
+  approveTeacherPost(@Param('id') id: string, @User() user: IUser) {
+    return this.usersService.approveTeacher(id, user);
+  }
+
+  @Patch('reject-teacher/:id')
+  @SkipCheckPermission()
+  @ResponseMessage('Reject teacher')
+  rejectTeacher(@Param('id') id: string, @User() user: IUser) {
+    return this.usersService.rejectTeacher(id, user);
+  }
+
+  @Post('reject-teacher/:id')
+  @SkipCheckPermission()
+  @ResponseMessage('Reject teacher')
+  rejectTeacherPost(@Param('id') id: string, @User() user: IUser) {
+    return this.usersService.rejectTeacher(id, user);
   }
 
   @Get(':id')

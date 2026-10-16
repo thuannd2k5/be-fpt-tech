@@ -37,6 +37,12 @@ export class User {
     role: mongoose.Schema.Types.ObjectId;
 
     @Prop()
+    subject: string;
+
+    @Prop()
+    experience_years: number;
+
+    @Prop({ default: 'ACTIVE' })
     status: string;
 
     @Prop()

@@ -22,6 +22,20 @@ export class EnrollmentsController {
     return this.enrollmentsService.findAll(+page, +limit, qs);
   }
 
+  @Get('me')
+  @SkipCheckPermission()
+  @ResponseMessage('Get my enrollments')
+  findMine(@User() user: IUser) {
+    return this.enrollmentsService.findMine(user);
+  }
+
+  @Get('teacher/students')
+  @SkipCheckPermission()
+  @ResponseMessage('Get students in my classrooms')
+  findStudentsForTeacher(@User() user: IUser) {
+    return this.enrollmentsService.findStudentsForTeacher(user);
+  }
+
   @Get(':id')
   @ResponseMessage('Get enrollment by id')
   findOne(@Param('id') id: string) {

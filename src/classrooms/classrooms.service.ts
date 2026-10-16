@@ -21,7 +21,15 @@ export class ClassroomsService {
     delete filter.current; delete filter.pageSize;
     const defaultLimit = +limit || 10; const current = +currentPage || 1;
     const totalItems = await this.classroomModel.countDocuments(filter);
-    const result = await this.classroomModel.find(filter).select(projection).skip((current - 1) * defaultLimit).limit(defaultLimit).sort(sort as any).populate(population).exec();
+    const result = await this.classroomModel.find(filter)
+      .select(projection)
+      .skip((current - 1) * defaultLimit)
+      .limit(defaultLimit)
+      .sort(sort as any)
+      .populate({ path: 'course_id', select: 'name description level duration' })
+      .populate({ path: 'teacher_id', select: 'name email phone' })
+      .populate(population)
+      .exec();
     return {
       meta: {
         current,
@@ -36,6 +44,13 @@ export class ClassroomsService {
   async findOne(id: string) {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found classroom';
     return await this.classroomModel.findOne({ _id: id }).populate('course_id teacher_id');
+  }
+
+  async findTeaching(user: IUser) {
+    return this.classroomModel.find({ teacher_id: user._id })
+      .populate('course_id teacher_id', 'name email')
+      .sort({ start_time: 1 })
+      .exec();
   }
 
   async update(updateClassroomDto: UpdateClassroomDto, user: IUser) {

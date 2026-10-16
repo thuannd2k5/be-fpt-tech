@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestj
 import { InvoicesService } from './invoices.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
-import { ResponseMessage, User } from '../decorator/customize';
+import { ResponseMessage, SkipCheckPermission, User } from '../decorator/customize';
 import { IUser } from '../users/user.interface';
 
 @Controller('invoices')
@@ -19,6 +19,13 @@ export class InvoicesController {
   @ResponseMessage('Get all invoices')
   findAll(@Query('current') page: string, @Query('pageSize') limit: string, @Query() qs: string) {
     return this.invoicesService.findAll(+page, +limit, qs);
+  }
+
+  @Get('me')
+  @SkipCheckPermission()
+  @ResponseMessage('Get my invoices')
+  findMine(@User() user: IUser) {
+    return this.invoicesService.findMine(user);
   }
 
   @Get(':id')

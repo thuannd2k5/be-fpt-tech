@@ -19,6 +19,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { ConversationsModule } from './conversations/conversations.module';
 import { MessagesModule } from './messages/messages.module';
 import { DatabasesModule } from './databases/databases.module';
+import { SchedulesModule } from './schedules/schedules.module';
 import MongooseDelete from 'mongoose-delete';
 
 @Module({
@@ -56,7 +57,8 @@ import MongooseDelete from 'mongoose-delete';
     NotificationsModule,
     ConversationsModule,
     MessagesModule,
-    DatabasesModule
+    DatabasesModule,
+    SchedulesModule
   ],
   controllers: [AppController],
   providers: [AppService,

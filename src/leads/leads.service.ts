@@ -51,6 +51,10 @@ export class LeadsService {
     return await this.leadModel.findOne({ _id: id }).populate('consultant_id');
   }
 
+  async findAssignedToMe(user: IUser) {
+    return this.leadModel.find({ consultant_id: user._id }).sort({ createdAt: -1 }).exec();
+  }
+
   async update(updateLeadDto: UpdateLeadDto, user: IUser) {
     return await this.leadModel.updateOne({ _id: updateLeadDto._id }, {
       ...updateLeadDto,
