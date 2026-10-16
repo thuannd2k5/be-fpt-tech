@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestj
 import { EnrollmentsService } from './enrollments.service';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
-import { ResponseMessage, User } from '../decorator/customize';
+import { ResponseMessage, SkipCheckPermission, User } from '../decorator/customize';
 import { IUser } from '../users/user.interface';
 
 @Controller('enrollments')
@@ -10,6 +10,7 @@ export class EnrollmentsController {
   constructor(private readonly enrollmentsService: EnrollmentsService) { }
 
   @Post()
+  @SkipCheckPermission()
   @ResponseMessage('Create new enrollment')
   create(@Body() createEnrollmentDto: CreateEnrollmentDto, @User() user: IUser) {
     return this.enrollmentsService.create(createEnrollmentDto, user);

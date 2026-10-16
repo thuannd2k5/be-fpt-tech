@@ -1,34 +1,53 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { MessagesService } from './messages.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
+import { ResponseMessage, SkipCheckPermission, User } from '../decorator/customize';
+import { IUser } from '../users/user.interface';
 
 @Controller('messages')
 export class MessagesController {
   constructor(private readonly messagesService: MessagesService) {}
 
   @Post()
-  create(@Body() createMessageDto: CreateMessageDto) {
-    return this.messagesService.create(createMessageDto);
+  @SkipCheckPermission()
+  @ResponseMessage('Create new message')
+  create(@Body() createMessageDto: CreateMessageDto, @User() user: IUser) {
+    return this.messagesService.create(createMessageDto, user);
   }
 
   @Get()
-  findAll() {
-    return this.messagesService.findAll();
+  @SkipCheckPermission()
+  @ResponseMessage('Get all messages')
+  findAll(
+    @Query('current') page: string,
+    @Query('pageSize') limit: string,
+    @Query() qs: string,
+  ) {
+    return this.messagesService.findAll(+page, +limit, qs);
   }
 
   @Get(':id')
+  @SkipCheckPermission()
+  @ResponseMessage('Get message by id')
   findOne(@Param('id') id: string) {
-    return this.messagesService.findOne(+id);
+    return this.messagesService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMessageDto: UpdateMessageDto) {
-    return this.messagesService.update(+id, updateMessageDto);
+  @SkipCheckPermission()
+  @ResponseMessage('Update message')
+  update(
+    @Param('id') id: string,
+    @Body() updateMessageDto: UpdateMessageDto,
+    @User() user: IUser,
+  ) {
+    return this.messagesService.update({ ...updateMessageDto, _id: id }, user);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.messagesService.remove(+id);
+  @ResponseMessage('Delete message')
+  remove(@Param('id') id: string, @User() user: IUser) {
+    return this.messagesService.remove(id, user);
   }
 }

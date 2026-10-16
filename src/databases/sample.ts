@@ -116,7 +116,7 @@ export const INIT_PERMISSION = [
     },
     {
         name: "Update user",
-        path: "/api/v1/users",
+        path: "/api/v1/users/:id",
         method: "PATCH",
         module: "USERS",
         createdBy: {
