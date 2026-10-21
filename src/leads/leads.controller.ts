@@ -29,6 +29,13 @@ export class LeadsController {
     return this.leadsService.findAssignedToMe(user);
   }
 
+  @Get('consultant-inbox')
+  @SkipCheckPermission()
+  @ResponseMessage('Get assigned and new leads for consultant')
+  findConsultantInbox(@User() user: IUser) {
+    return this.leadsService.findConsultantInbox(user);
+  }
+
   @Get(':id')
   @ResponseMessage('Get lead by id')
   findOne(@Param('id') id: string) {

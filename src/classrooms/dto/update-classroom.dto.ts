@@ -6,4 +6,5 @@ export class UpdateClassroomDto extends PartialType(CreateClassroomDto) {
     @IsNotEmpty()
     @IsMongoId()
     _id: string;
+
 }

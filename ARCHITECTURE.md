@@ -256,10 +256,13 @@ All routes below are protected unless marked **Public**. The exact role is not h
 | GET/POST/PATCH/DELETE | `/permissions`, `/permissions/:id` | Permission | Permission CRUD |
 | GET/POST/PATCH/DELETE | `/courses`, `/courses/:id` | Permission | Course CRUD |
 | GET/POST/PATCH/DELETE | `/classrooms`, `/classrooms/:id` | Permission | Classroom CRUD |
+| GET | `/classrooms/course/:courseId/open` | Public | List open classes for course registration |
 | GET/POST/PATCH/DELETE | `/enrollments`, `/enrollments/:id` | Permission | Enrollment CRUD |
+| POST | `/enrollments/register` | Authenticated student or normal user | Self-enroll in an open classroom; normal users become students |
 | GET/POST/PATCH/DELETE | `/invoices`, `/invoices/:id` | Permission | Invoice CRUD |
 | GET/POST/PATCH/DELETE | `/payments`, `/payments/:id` | Permission | Payment CRUD |
 | GET/POST/PATCH/DELETE | `/leads`, `/leads/:id` | Permission | Lead CRUD |
+| GET | `/leads/consultant-inbox` | Authenticated consultant | View assigned leads and new unassigned inquiries |
 | GET/POST/PATCH/DELETE | `/conversations`, `/conversations/:id` | Permission | Module scaffold; verify implementation |
 | GET/POST/PATCH/DELETE | `/messages`, `/messages/:id` | Permission | Module scaffold; verify implementation |
 | GET/POST/PATCH/DELETE | `/notifications`, `/notifications/:id` | Permission | Module scaffold; verify implementation |
@@ -297,6 +300,8 @@ The exact list metadata shape is service-specific. Frontend pagination code shou
 6. A payment is recorded against the invoice using `invoice_id`, payment method and payment date.
 7. Enrollment, invoice and classroom status transitions are performed through their respective APIs; the backend schemas do not currently define a single cross-module transaction endpoint.
 
+Self-service registration lists open classes through `GET /classrooms/course/:courseId/open` and submits `POST /enrollments/register`. Only `NORMAL USER` and `STUDENT` accounts may use this endpoint. A normal user is assigned the `STUDENT` role after successful enrollment and invoice creation.
+
 #### B. Permission administration
 
 1. Create or update `Permission` records with the exact method/path pair.
@@ -310,6 +315,7 @@ The exact list metadata shape is service-specific. Frontend pagination code shou
 1. Capture a lead with contact information and the requested `course_name`.
 2. An authorized operator updates `consultant_id`, `status` and `note`.
 3. The frontend uses the lead status string for its workflow; no enum is enforced in the current schema.
+4. Consultants review assigned leads and new unassigned inquiries through `GET /leads/consultant-inbox`.
 
 ### 4.6 Current contract caveats
 

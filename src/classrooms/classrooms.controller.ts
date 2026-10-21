@@ -29,6 +29,13 @@ export class ClassroomsController {
     return this.classroomsService.findTeaching(user);
   }
 
+  @Get('course/:courseId/open')
+  @Public()
+  @ResponseMessage('Get open classrooms for a course')
+  findOpenForCourse(@Param('courseId') courseId: string) {
+    return this.classroomsService.findOpenForCourse(courseId);
+  }
+
   @Get(':id')
   @Public()
   @ResponseMessage('Get classroom by id')

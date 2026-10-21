@@ -1,5 +1,6 @@
 export const ADMIN_ROLE = "SUPER ADMIN";
 export const USER_ROLE = "NORMAL USER";
+export const STUDENT_ROLE = "STUDENT";
 
 export const INIT_PERMISSION = [
     {

@@ -9,6 +9,13 @@ import { IUser } from '../users/user.interface';
 export class EnrollmentsController {
   constructor(private readonly enrollmentsService: EnrollmentsService) { }
 
+  @Post('register')
+  @SkipCheckPermission()
+  @ResponseMessage('Register for a course')
+  register(@Body() createEnrollmentDto: CreateEnrollmentDto, @User() user: IUser) {
+    return this.enrollmentsService.registerForSelf(createEnrollmentDto, user);
+  }
+
   @Post()
   @SkipCheckPermission()
   @ResponseMessage('Create new enrollment')

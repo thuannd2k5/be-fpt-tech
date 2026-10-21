@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -53,6 +53,21 @@ export class LeadsService {
 
   async findAssignedToMe(user: IUser) {
     return this.leadModel.find({ consultant_id: user._id }).sort({ createdAt: -1 }).exec();
+  }
+
+  async findConsultantInbox(user: IUser) {
+    const roleName = user.role?.name?.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase() ?? '';
+    if (!roleName.includes('CONSULTANT') && !roleName.includes('TU VAN')) {
+      throw new ForbiddenException('Chỉ tài khoản tư vấn viên mới được xem danh sách khách hàng tư vấn.');
+    }
+
+    return this.leadModel.find({
+      $or: [
+        { consultant_id: user._id },
+        { consultant_id: { $exists: false } },
+        { consultant_id: null },
+      ],
+    }).sort({ createdAt: -1 }).exec();
   }
 
   async update(updateLeadDto: UpdateLeadDto, user: IUser) {

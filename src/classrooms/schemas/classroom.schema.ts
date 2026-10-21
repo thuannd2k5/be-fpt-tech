@@ -5,6 +5,7 @@ import { User } from '../../users/schemas/user.schema';
 
 export enum ClassroomStatus {
     OPEN = 'OPEN',
+    FULL = 'FULL',
     COMPLETED = 'COMPLETED',
     CANCELLED = 'CANCELLED'
 }

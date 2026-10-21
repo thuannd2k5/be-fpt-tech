@@ -6,7 +6,7 @@ import { Permission, PermissionDocument } from '../permissions/schemas/permissio
 import { Role, RoleDocument } from '../roles/schemas/role.schema';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
-import { ADMIN_ROLE, INIT_PERMISSION, USER_ROLE } from './sample';
+import { ADMIN_ROLE, INIT_PERMISSION, STUDENT_ROLE, USER_ROLE } from './sample';
 
 @Injectable()
 export class DatabasesService implements OnModuleInit {
@@ -56,8 +56,24 @@ export class DatabasesService implements OnModuleInit {
                         description: "Người dùng sử dụng hệ thống",
                         isActive: true,
                         permissions: [], // khong set quyen , chỉ cần add role
+                    },
+                    {
+                        name: STUDENT_ROLE,
+                        description: "Học viên đã đăng ký khóa học",
+                        isActive: true,
+                        permissions: [],
                     }
                 ])
+            }
+
+            const studentRole = await this.roleModel.findOne({ name: STUDENT_ROLE });
+            if (!studentRole) {
+                await this.roleModel.create({
+                    name: STUDENT_ROLE,
+                    description: "Học viên đã đăng ký khóa học",
+                    isActive: true,
+                    permissions: [],
+                });
             }
 
             //create user
