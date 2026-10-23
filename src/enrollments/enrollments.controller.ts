@@ -43,6 +43,13 @@ export class EnrollmentsController {
     return this.enrollmentsService.findStudentsForTeacher(user);
   }
 
+  @Patch('me/:id/cancel')
+  @SkipCheckPermission()
+  @ResponseMessage('Cancel my enrollment')
+  cancelMine(@Param('id') id: string, @User() user: IUser) {
+    return this.enrollmentsService.cancelMine(id, user);
+  }
+
   @Get(':id')
   @ResponseMessage('Get enrollment by id')
   findOne(@Param('id') id: string) {

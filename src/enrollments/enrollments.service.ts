@@ -213,6 +213,68 @@ export class EnrollmentsService {
       .exec();
   }
 
+  async cancelMine(id: string, user: IUser) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('Mã đăng ký không hợp lệ.');
+    }
+
+    const enrollment = await this.enrollmentModel.findOne({
+      _id: id,
+      student_id: user._id,
+    }).select('class_id status').lean().exec();
+    if (!enrollment) {
+      throw new ForbiddenException('Không tìm thấy đăng ký thuộc tài khoản của bạn.');
+    }
+    if (enrollment.status === EnrollmentStatus.CANCELLED) {
+      throw new BadRequestException('Đăng ký này đã được hủy.');
+    }
+    if (enrollment.status === EnrollmentStatus.COMPLETED) {
+      throw new BadRequestException('Không thể hủy đăng ký đã hoàn thành.');
+    }
+
+    const invoice = await this.invoiceModel.findOne({ enrollment_id: id })
+      .select('status')
+      .lean()
+      .exec();
+    const invoiceStatus = invoice?.status?.toUpperCase();
+    if (['PAID', 'PARTIAL', 'WAITING_CONFIRMATION'].includes(invoiceStatus || '')) {
+      throw new BadRequestException('Không thể hủy đăng ký sau khi đã thanh toán hoặc gửi yêu cầu xác nhận.');
+    }
+
+    if (invoice) {
+      const invoiceUpdate = await this.invoiceModel.updateOne(
+        { enrollment_id: id, status: invoice.status },
+        {
+          status: 'CANCELLED',
+          updatedBy: { _id: user._id, email: user.email },
+        },
+      ).exec();
+      if (!invoiceUpdate.matchedCount) {
+        throw new BadRequestException('Hóa đơn đã thay đổi. Vui lòng tải lại trang.');
+      }
+    }
+
+    const enrollmentUpdate = await this.enrollmentModel.updateOne(
+      { _id: id, student_id: user._id, status: { $ne: EnrollmentStatus.CANCELLED } },
+      {
+        status: EnrollmentStatus.CANCELLED,
+        updatedBy: { _id: user._id, email: user.email },
+      },
+    ).exec();
+    if (!enrollmentUpdate.matchedCount) {
+      if (invoice) {
+        await this.invoiceModel.updateOne(
+          { enrollment_id: id, status: 'CANCELLED' },
+          { status: invoice.status },
+        ).exec();
+      }
+      throw new BadRequestException('Không thể hủy đăng ký. Vui lòng tải lại trang.');
+    }
+
+    await this.updateClassCapacityStatus(String(enrollment.class_id));
+    return enrollmentUpdate;
+  }
+
   async update(updateEnrollmentDto: UpdateEnrollmentDto, user: IUser) {
     const enrollment = await this.enrollmentModel.findById(updateEnrollmentDto._id).select('class_id status').lean().exec();
     if (!enrollment) return { matchedCount: 0, modifiedCount: 0 };
